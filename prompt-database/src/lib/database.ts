@@ -1,0 +1,18 @@
+import Dexie, { Table } from 'dexie';
+import { Prompt, Category } from '@/types/prompt';
+
+export class PromptDatabase extends Dexie {
+  prompts!: Table<Prompt>;
+  categories!: Table<Category>;
+
+  constructor() {
+    super('PromptDatabase');
+    
+    this.version(1).stores({
+      prompts: 'id, title, category, lastUsed, createdAt, updatedAt, tags',
+      categories: 'id, name',
+    });
+  }
+}
+
+export const db = new PromptDatabase();
