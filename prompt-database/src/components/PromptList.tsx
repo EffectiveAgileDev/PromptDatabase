@@ -1,5 +1,4 @@
 import { useAppStore } from '@/store/promptStore';
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
 import { useSortedAndFilteredPrompts } from '@/hooks/useSortedAndFilteredPrompts';
 import { PromptListHeader } from './PromptListHeader';
 import { PromptListItem } from './PromptListItem';

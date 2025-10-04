@@ -1,4 +1,16 @@
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+interface Prompt {
+  id: string;
+  title: string;
+  promptText?: string;
+  category?: string;
+  tags?: string;
+  expectedOutput?: string;
+  lastUsed?: Date;
+  notes?: string;
+  customFields?: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface PromptListHeaderProps {
   sortField: keyof Prompt;

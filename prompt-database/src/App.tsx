@@ -1,7 +1,7 @@
-import { BasicTest } from './components/BasicTest';
+import { MainApp } from './components/MainApp';
 
 function App() {
-  return <BasicTest />;
+  return <MainApp />;
 }
 
 export default App;

@@ -1,5 +1,3 @@
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
-
 export interface ValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
