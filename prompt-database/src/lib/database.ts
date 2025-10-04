@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Prompt, Category } from '@/types/prompt';
+import { Prompt, Category } from '@/types';
 
 export class PromptDatabase extends Dexie {
   prompts!: Table<Prompt>;

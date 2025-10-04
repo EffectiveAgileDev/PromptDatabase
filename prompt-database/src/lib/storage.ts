@@ -1,5 +1,5 @@
 import { db } from './database';
-import { Prompt, Category } from '@/types/prompt';
+import { Prompt, Category } from '@/types';
 
 export class StorageService {
   // Prompt CRUD operations

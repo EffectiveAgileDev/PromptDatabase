@@ -1,5 +1,31 @@
 import { create } from 'zustand';
-import { Prompt, Category, AppSettings } from '@/types/prompt';
+
+interface Prompt {
+  id: string;
+  title: string;
+  promptText?: string;
+  category?: string;
+  tags?: string;
+  expectedOutput?: string;
+  lastUsed?: Date;
+  notes?: string;
+  customFields?: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface AppSettings {
+  itemsPerPage: number;
+  defaultSortField: keyof Prompt;
+  defaultSortDirection: 'asc' | 'desc';
+  theme: 'light' | 'dark' | 'system';
+}
+
+interface Category {
+  id: string;
+  name: string;
+  color?: string;
+}
 
 interface PromptState {
   items: Map<string, Prompt>;
