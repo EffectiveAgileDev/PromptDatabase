@@ -2,6 +2,7 @@ import { useAppStore } from '@/store/promptStore';
 import { useSortedAndFilteredPrompts } from '@/hooks/useSortedAndFilteredPrompts';
 import { PromptListHeader } from './PromptListHeader';
 import { PromptListItem } from './PromptListItem';
+import { SortField } from '@/lib/storage';
 
 export function PromptList() {
   const {
@@ -25,7 +26,7 @@ export function PromptList() {
     selectPrompt(promptId);
   };
 
-  const handleSort = (field: keyof Prompt) => {
+  const handleSort = (field: SortField) => {
     if (prompts.sortField === field) {
       // Toggle direction if clicking same field
       setSortDirection(prompts.sortDirection === 'asc' ? 'desc' : 'asc');

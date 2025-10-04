@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { SearchField, SortField, SortDirection } from '@/lib/storage';
 
 interface Prompt {
   id: string;
@@ -16,8 +17,8 @@ interface Prompt {
 
 interface AppSettings {
   itemsPerPage: number;
-  defaultSortField: keyof Prompt;
-  defaultSortDirection: 'asc' | 'desc';
+  defaultSortField: SortField;
+  defaultSortDirection: SortDirection;
   theme: 'light' | 'dark' | 'system';
 }
 
@@ -31,9 +32,9 @@ interface PromptState {
   items: Map<string, Prompt>;
   selectedId: string | null;
   searchQuery: string;
-  searchField: string;
-  sortField: keyof Prompt;
-  sortDirection: 'asc' | 'desc';
+  searchField: SearchField;
+  sortField: SortField;
+  sortDirection: SortDirection;
   currentPage: number;
 }
 
@@ -65,9 +66,9 @@ interface AppActions {
   
   // Search and sort actions
   setSearchQuery: (query: string) => void;
-  setSearchField: (field: string) => void;
-  setSortField: (field: keyof Prompt) => void;
-  setSortDirection: (direction: 'asc' | 'desc') => void;
+  setSearchField: (field: SearchField) => void;
+  setSortField: (field: SortField) => void;
+  setSortDirection: (direction: SortDirection) => void;
   setCurrentPage: (page: number) => void;
   
   // Category actions
@@ -96,9 +97,9 @@ export const useAppStore = create<AppState & AppActions>((set, get) => ({
     items: new Map(),
     selectedId: null,
     searchQuery: '',
-    searchField: 'title',
-    sortField: 'updatedAt',
-    sortDirection: 'desc',
+    searchField: 'title' as SearchField,
+    sortField: 'updatedAt' as SortField,
+    sortDirection: 'desc' as SortDirection,
     currentPage: 1,
   },
   categories: {

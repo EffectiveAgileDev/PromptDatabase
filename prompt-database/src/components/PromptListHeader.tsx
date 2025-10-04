@@ -1,25 +1,13 @@
-interface Prompt {
-  id: string;
-  title: string;
-  promptText?: string;
-  category?: string;
-  tags?: string;
-  expectedOutput?: string;
-  lastUsed?: Date;
-  notes?: string;
-  customFields?: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { SortField, SortDirection } from '@/lib/storage';
 
 interface PromptListHeaderProps {
-  sortField: keyof Prompt;
-  sortDirection: 'asc' | 'desc';
-  onSort: (field: keyof Prompt) => void;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
 }
 
 export function PromptListHeader({ sortField, sortDirection, onSort }: PromptListHeaderProps) {
-  const getSortIndicator = (field: keyof Prompt) => {
+  const getSortIndicator = (field: SortField) => {
     if (sortField !== field) return null;
     
     return sortDirection === 'asc' ? (
@@ -33,21 +21,21 @@ export function PromptListHeader({ sortField, sortDirection, onSort }: PromptLis
     <div className="grid grid-cols-4 gap-4 p-2 border-b font-semibold text-sm text-gray-700">
       <button
         data-testid="sort-header-title"
-        onClick={() => onSort('title')}
+        onClick={() => onSort('title' as SortField)}
         className="text-left hover:text-blue-600 flex items-center gap-1"
       >
         Title {getSortIndicator('title')}
       </button>
       <button
         data-testid="sort-header-category"
-        onClick={() => onSort('category')}
+        onClick={() => onSort('category' as SortField)}
         className="text-left hover:text-blue-600 flex items-center gap-1"
       >
         Category {getSortIndicator('category')}
       </button>
       <button
         data-testid="sort-header-updatedAt"
-        onClick={() => onSort('updatedAt')}
+        onClick={() => onSort('updatedAt' as SortField)}
         className="text-left hover:text-blue-600 flex items-center gap-1"
       >
         Updated {getSortIndicator('updatedAt')}

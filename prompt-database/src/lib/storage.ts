@@ -1,6 +1,19 @@
 import { db } from './database';
 import { Prompt, Category } from '@/types';
 
+export type SearchField = 'title' | 'promptText' | 'category' | 'tags';
+export type SortField = 'title' | 'createdAt' | 'updatedAt' | 'lastUsed' | 'category';
+export type SortDirection = 'asc' | 'desc';
+
+export interface SearchOptions {
+  query?: string;
+  field?: SearchField;
+  sortBy?: SortField;
+  sortDirection?: SortDirection;
+  limit?: number;
+  offset?: number;
+}
+
 export class StorageService {
   // Prompt CRUD operations
   async getAllPrompts(): Promise<Prompt[]> {
@@ -49,27 +62,115 @@ export class StorageService {
     }
   }
 
-  // Search operations
-  async searchPrompts(query: string, field: keyof Prompt = 'title'): Promise<Prompt[]> {
+  // Search and sort operations
+  async searchPrompts(options: SearchOptions = {}): Promise<Prompt[]> {
     try {
-      const allPrompts = await db.prompts.toArray();
-      return allPrompts.filter(prompt => {
-        const value = prompt[field];
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(query.toLowerCase());
-        }
-        return false;
-      });
+      let prompts = await db.prompts.toArray();
+      
+      // Apply search filter
+      if (options.query && options.field) {
+        prompts = this.filterPrompts(prompts, options.query, options.field);
+      }
+      
+      // Apply sorting
+      if (options.sortBy) {
+        prompts = this.sortPrompts(prompts, options.sortBy, options.sortDirection || 'asc');
+      }
+      
+      // Apply pagination
+      if (options.limit !== undefined) {
+        const start = options.offset || 0;
+        prompts = prompts.slice(start, start + options.limit);
+      }
+      
+      return prompts;
     } catch (error) {
       console.error('Failed to search prompts:', error);
-      const prompts = this.fallbackToLocalStorage('prompts', []);
-      return prompts.filter((prompt: Prompt) => {
-        const value = prompt[field];
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(query.toLowerCase());
-        }
-        return false;
-      });
+      return this.fallbackSearch(options);
+    }
+  }
+
+  private filterPrompts(prompts: Prompt[], query: string, field: SearchField): Prompt[] {
+    const lowerQuery = query.toLowerCase();
+    
+    return prompts.filter(prompt => {
+      switch (field) {
+        case 'title':
+          return prompt.title?.toLowerCase().includes(lowerQuery) || false;
+        case 'promptText':
+          return prompt.promptText?.toLowerCase().includes(lowerQuery) || false;
+        case 'category':
+          return prompt.category?.toLowerCase().includes(lowerQuery) || false;
+        case 'tags':
+          return prompt.tags?.toLowerCase().includes(lowerQuery) || false;
+        default:
+          return false;
+      }
+    });
+  }
+
+  private sortPrompts(prompts: Prompt[], field: SortField, direction: SortDirection): Prompt[] {
+    return [...prompts].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (field) {
+        case 'title':
+          aValue = a.title || '';
+          bValue = b.title || '';
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+        case 'updatedAt':
+          aValue = new Date(a.updatedAt);
+          bValue = new Date(b.updatedAt);
+          break;
+        case 'lastUsed':
+          aValue = a.lastUsed ? new Date(a.lastUsed) : new Date(0);
+          bValue = b.lastUsed ? new Date(b.lastUsed) : new Date(0);
+          break;
+        case 'category':
+          aValue = a.category || '';
+          bValue = b.category || '';
+          break;
+        default:
+          return 0;
+      }
+      
+      let comparison = 0;
+      if (aValue < bValue) {
+        comparison = -1;
+      } else if (aValue > bValue) {
+        comparison = 1;
+      }
+      
+      return direction === 'desc' ? -comparison : comparison;
+    });
+  }
+
+  private fallbackSearch(options: SearchOptions): Prompt[] {
+    try {
+      let prompts = this.fallbackToLocalStorage('prompts', []);
+      
+      if (options.query && options.field) {
+        prompts = this.filterPrompts(prompts, options.query, options.field);
+      }
+      
+      if (options.sortBy) {
+        prompts = this.sortPrompts(prompts, options.sortBy, options.sortDirection || 'asc');
+      }
+      
+      if (options.limit !== undefined) {
+        const start = options.offset || 0;
+        prompts = prompts.slice(start, start + options.limit);
+      }
+      
+      return prompts;
+    } catch (error) {
+      console.error('Fallback search failed:', error);
+      return [];
     }
   }
 
