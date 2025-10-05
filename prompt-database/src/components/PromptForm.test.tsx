@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PromptForm } from './PromptForm';
+import { ToastProvider } from '@/hooks/useToast';
 import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
 
 // Mock the store
@@ -14,6 +15,14 @@ describe('PromptForm', () => {
   const mockAddPrompt = vi.fn();
   const mockUpdatePrompt = vi.fn();
   const mockSetError = vi.fn();
+
+  const renderWithProvider = (prompt?: any) => {
+    return render(
+      <ToastProvider>
+        <PromptForm prompt={prompt} />
+      </ToastProvider>
+    );
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,7 +37,7 @@ describe('PromptForm', () => {
   });
 
   it('renders form fields correctly', () => {
-    render(<PromptForm />);
+    renderWithProvider();
     
     expect(screen.getByTestId('prompt-title-input')).toBeInTheDocument();
     expect(screen.getByTestId('prompt-text-input')).toBeInTheDocument();
@@ -41,7 +50,7 @@ describe('PromptForm', () => {
 
   it('requires title field to be filled', async () => {
     const user = userEvent.setup();
-    render(<PromptForm />);
+    renderWithProvider();
     
     const saveButton = screen.getByTestId('save-prompt-button');
     await user.click(saveButton);
@@ -52,7 +61,7 @@ describe('PromptForm', () => {
 
   it('creates new prompt when form is submitted with valid data', async () => {
     const user = userEvent.setup();
-    render(<PromptForm />);
+    renderWithProvider();
     
     await user.type(screen.getByTestId('prompt-title-input'), 'Test Prompt');
     await user.type(screen.getByTestId('prompt-text-input'), 'Test prompt text');
@@ -81,7 +90,7 @@ describe('PromptForm', () => {
       updatedAt: new Date(),
     };
     
-    render(<PromptForm prompt={existingPrompt} />);
+    renderWithProvider(existingPrompt);
     
     const titleInput = screen.getByTestId('prompt-title-input');
     await user.clear(titleInput);
@@ -108,7 +117,7 @@ describe('PromptForm', () => {
       updatedAt: new Date(),
     };
     
-    render(<PromptForm prompt={existingPrompt} />);
+    renderWithProvider(existingPrompt);
     
     await user.type(screen.getByTestId('prompt-title-input'), ' Updated');
     
@@ -131,7 +140,7 @@ describe('PromptForm', () => {
       }
     });
     
-    render(<PromptForm />);
+    renderWithProvider();
     
     await user.type(screen.getByTestId('prompt-title-input'), 'Existing Title');
     await user.click(screen.getByTestId('save-prompt-button'));
