@@ -1,11 +1,13 @@
 import { ToastProvider } from '@/hooks/useToast';
 import { CustomFieldsApp } from '@/components/CustomFieldsApp';
+import { PerformanceMonitor } from '@/components/PerformanceMonitor';
 
 function App() {
   try {
     return (
       <ToastProvider>
         <CustomFieldsApp />
+        <PerformanceMonitor enabled={import.meta.env.DEV} />
       </ToastProvider>
     );
   } catch (error) {
