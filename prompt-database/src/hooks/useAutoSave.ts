@@ -46,7 +46,7 @@ export function useAutoSave<T>({
         
         // Show subtle feedback for auto-saves (not for first save)
         if (saveCountRef.current > 1) {
-          showToast('Auto-saved', 'success', { duration: 1500 });
+          showToast('Auto-saved', 'success');
         }
       } catch (error) {
         console.error('Auto-save failed:', error);

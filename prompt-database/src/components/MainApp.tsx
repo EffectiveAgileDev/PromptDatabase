@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useToast } from '../hooks/useToast';
+import { CopyToClipboard } from './CopyToClipboard';
 
 interface Prompt {
   id: string;
@@ -9,14 +11,43 @@ interface Prompt {
   expectedOutput?: string;
   lastUsed?: Date;
   notes?: string;
+  customFields?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface CustomField {
+  id: string;
+  name: string;
+  type: 'text' | 'textarea' | 'number' | 'select';
+  options?: string[];
+  required?: boolean;
 }
 
 type SortField = 'title' | 'category' | 'createdAt' | 'updatedAt';
 type SearchField = 'title' | 'promptText' | 'category' | 'tags' | 'all';
 
 export function MainApp() {
+  const { showToast } = useToast();
+  const [categories] = useState([
+    'Development', 'General', 'Project Management', 'Writing', 'Research', 
+    'Marketing', 'Documentation', 'Analysis', 'Creative', 'Support'
+  ]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([
+    {
+      id: 'priority',
+      name: 'Priority',
+      type: 'select',
+      options: ['Low', 'Medium', 'High', 'Critical'],
+      required: false
+    },
+    {
+      id: 'usecase',
+      name: 'Use Case',
+      type: 'text',
+      required: false
+    }
+  ]);
   const [prompts, setPrompts] = useState<Prompt[]>([
     {
       id: '1',
@@ -53,6 +84,24 @@ export function MainApp() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [showFieldManager, setShowFieldManager] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage first, then system preference
+    try {
+      const stored = localStorage.getItem('darkMode');
+      if (stored !== null) {
+        return stored === 'true';
+      }
+      // Check system preference
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      return false; // Default to light mode
+    } catch (error) {
+      console.error('Error reading dark mode preference:', error);
+      return false;
+    }
+  });
   
   const [formData, setFormData] = useState({
     title: '',
@@ -61,6 +110,7 @@ export function MainApp() {
     tags: '',
     expectedOutput: '',
     notes: '',
+    customFields: {} as Record<string, any>,
   });
 
   // Search and filter logic
@@ -121,6 +171,7 @@ export function MainApp() {
       if (selectedPrompt?.id === id) {
         setSelectedPrompt(null);
       }
+      showToast('Prompt deleted successfully', 'success');
     }
   };
 
@@ -133,12 +184,16 @@ export function MainApp() {
       tags: prompt.tags || '',
       expectedOutput: prompt.expectedOutput || '',
       notes: prompt.notes || '',
+      customFields: prompt.customFields || {},
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!formData.title.trim()) {
+      showToast('Title is required', 'error');
+      return;
+    }
     
     if (selectedPrompt) {
       // Update existing prompt
@@ -148,6 +203,7 @@ export function MainApp() {
           : p
       ));
       setSelectedPrompt(null);
+      showToast('Prompt updated successfully', 'success');
     } else {
       // Create new prompt
       const newPrompt: Prompt = {
@@ -157,6 +213,7 @@ export function MainApp() {
         updatedAt: new Date(),
       };
       setPrompts([...prompts, newPrompt]);
+      showToast('Prompt created successfully', 'success');
     }
     
     setFormData({
@@ -166,20 +223,198 @@ export function MainApp() {
       tags: '',
       expectedOutput: '',
       notes: '',
+      customFields: {},
     });
   };
 
+  const handleCopySuccess = (text: string) => {
+    if (selectedPrompt) {
+      // Update lastUsed timestamp
+      setPrompts(prev => prev.map(p => 
+        p.id === selectedPrompt.id 
+          ? { ...p, lastUsed: new Date(), updatedAt: new Date() }
+          : p
+      ));
+      showToast('Prompt copied to clipboard', 'success');
+    }
+  };
+
+  const handleCustomFieldChange = (fieldId: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: {
+        ...prev.customFields,
+        [fieldId]: value
+      }
+    }));
+  };
+
+  // Auto-save functionality for existing prompts
+  const autoSave = useCallback(() => {
+    if (selectedPrompt && formData.title.trim()) {
+      setPrompts(prev => prev.map(p => 
+        p.id === selectedPrompt.id 
+          ? { ...p, ...formData, updatedAt: new Date() }
+          : p
+      ));
+    }
+  }, [selectedPrompt, formData]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (selectedPrompt && formData.title.trim()) {
+      const timer = setTimeout(() => {
+        autoSave();
+      }, 1000); // 1 second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [formData, selectedPrompt, autoSave]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S: Save
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        if (selectedPrompt || formData.title.trim()) {
+          const form = document.querySelector('form');
+          if (form) {
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+          }
+        }
+      }
+      
+      // Ctrl+C: Copy prompt text
+      if (e.ctrlKey && e.key === 'c' && formData.promptText && selectedPrompt) {
+        const activeElement = document.activeElement;
+        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          navigator.clipboard?.writeText(formData.promptText);
+          handleCopySuccess(formData.promptText);
+        }
+      }
+
+      // Ctrl+F: Focus search
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+
+      // /: Focus search
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [formData, selectedPrompt, handleCopySuccess]);
+
+  // Initialize dark mode on mount
+  useEffect(() => {
+    console.log('Initial dark mode setup:', darkMode);
+    console.log('Document classes before:', document.documentElement.className);
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    console.log('Document classes after:', document.documentElement.className);
+  }, []); // Run once on mount
+
+  // Dark mode effect
+  useEffect(() => {
+    console.log('Dark mode state changed:', darkMode);
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('darkMode', darkMode.toString());
+    } catch (error) {
+      console.error('Error saving dark mode preference:', error);
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = useCallback(() => {
+    console.log('Toggle dark mode clicked, current state:', darkMode);
+    const newMode = !darkMode;
+    console.log('Setting new dark mode:', newMode);
+    setDarkMode(newMode);
+    showToast(`Switched to ${newMode ? 'dark' : 'light'} mode`, 'success');
+  }, [darkMode, showToast]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Prompt Database</h1>
+    <div 
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors"
+      style={{
+        backgroundColor: darkMode ? '#111827' : '#f9fafb',
+        color: darkMode ? '#ffffff' : '#000000'
+      }}
+    >
+      <header 
+        className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+        style={{
+          backgroundColor: darkMode ? '#1f2937' : '#ffffff',
+          borderColor: darkMode ? '#374151' : '#e5e7eb'
+        }}
+      >
+        <div className="px-6 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Prompt Database</h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleDarkMode}
+              className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+              title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              type="button"
+            >
+              {darkMode ? '☀️ Light' : '🌙 Dark'} (Current: {darkMode ? 'Dark' : 'Light'})
+            </button>
+            <button
+              onClick={() => {
+                const dataToExport = {
+                  version: '1.0',
+                  exportDate: new Date().toISOString(),
+                  customFields,
+                  prompts
+                };
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `prompts-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showToast(`Exported ${prompts.length} prompts`, 'success');
+              }}
+              className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+            >
+              📊 Export Data
+            </button>
+            <button
+              onClick={() => setShowFieldManager(true)}
+              className="px-3 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              ⚙️ Manage Fields
+            </button>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              <span>⌨️ Shortcuts: Ctrl+S (Save) • Ctrl+C (Copy) • Ctrl+F or / (Search)</span>
+            </div>
+          </div>
         </div>
       </header>
 
       <div className="flex h-[calc(100vh-64px)]">
         {/* Prompt List */}
-        <div className="w-1/3 bg-white border-r overflow-y-auto">
+        <div className="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
           <div className="p-4">
             {/* Search Controls */}
             <div className="mb-4 space-y-2">
@@ -192,12 +427,12 @@ export function MainApp() {
                     setCurrentPage(1);
                   }}
                   placeholder="Search prompts..."
-                  className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <select
                   value={searchField}
                   onChange={(e) => setSearchField(e.target.value as SearchField)}
-                  className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Fields</option>
                   <option value="title">Title</option>
@@ -229,7 +464,7 @@ export function MainApp() {
               </div>
             </div>
 
-            <h2 className="text-lg font-semibold mb-3">
+            <h2 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
               Prompts ({sortedPrompts.length} / {prompts.length})
             </h2>
             
@@ -298,8 +533,8 @@ export function MainApp() {
         </div>
 
         {/* Prompt Form */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-gray-800">
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             {selectedPrompt ? 'Edit Prompt' : 'Create New Prompt'}
           </h2>
           
@@ -318,14 +553,24 @@ export function MainApp() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prompt Text
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Prompt Text
+                </label>
+                {formData.promptText && (
+                  <CopyToClipboard
+                    text={formData.promptText}
+                    buttonText="Copy"
+                    onCopy={handleCopySuccess}
+                  />
+                )}
+              </div>
               <textarea
                 value={formData.promptText}
                 onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={4}
+                placeholder="Enter your prompt text"
               />
             </div>
 
@@ -333,12 +578,16 @@ export function MainApp() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Category
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -374,8 +623,63 @@ export function MainApp() {
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={2}
+                placeholder="Additional notes"
               />
             </div>
+
+            {/* Custom Fields */}
+            {customFields.length > 0 && (
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-medium text-gray-700">Custom Fields</h3>
+                {customFields.map((field) => (
+                  <div key={field.id}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {field.name} {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    {field.type === 'select' ? (
+                      <select
+                        value={formData.customFields[field.id] || ''}
+                        onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required={field.required}
+                      >
+                        <option value="">Select {field.name}</option>
+                        {field.options?.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    ) : field.type === 'textarea' ? (
+                      <textarea
+                        value={formData.customFields[field.id] || ''}
+                        onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={3}
+                        required={field.required}
+                        placeholder={`Enter ${field.name}`}
+                      />
+                    ) : field.type === 'number' ? (
+                      <input
+                        type="number"
+                        value={formData.customFields[field.id] || ''}
+                        onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required={field.required}
+                        placeholder={`Enter ${field.name}`}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData.customFields[field.id] || ''}
+                        onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required={field.required}
+                        placeholder={`Enter ${field.name}`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button
               type="submit"
@@ -386,6 +690,113 @@ export function MainApp() {
           </form>
         </div>
       </div>
+
+      {/* Simple Field Manager Modal */}
+      {showFieldManager && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Manage Custom Fields</h2>
+              <button
+                onClick={() => setShowFieldManager(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700">Current Fields:</h3>
+              {customFields.map((field) => (
+                <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div>
+                    <span className="font-medium">{field.name}</span>
+                    <span className="text-sm text-gray-500 ml-2">({field.type})</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCustomFields(prev => prev.filter(f => f.id !== field.id));
+                      showToast(`Removed field: ${field.name}`, 'success');
+                    }}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              
+              {customFields.length === 0 && (
+                <p className="text-gray-500 text-sm">No custom fields added yet.</p>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t space-y-3">
+              <button
+                onClick={() => {
+                  const fieldName = prompt('Enter field name:');
+                  if (fieldName) {
+                    const newField: CustomField = {
+                      id: fieldName.toLowerCase().replace(/\s+/g, '_'),
+                      name: fieldName,
+                      type: 'text',
+                      required: false
+                    };
+                    setCustomFields(prev => [...prev, newField]);
+                    showToast(`Added field: ${fieldName}`, 'success');
+                  }
+                }}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                + Add Text Field
+              </button>
+              
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        try {
+                          const data = JSON.parse(event.target?.result as string);
+                          if (data.prompts && Array.isArray(data.prompts)) {
+                            setPrompts(prev => [...prev, ...data.prompts]);
+                            if (data.customFields && Array.isArray(data.customFields)) {
+                              setCustomFields(data.customFields);
+                            }
+                            showToast(`Imported ${data.prompts.length} prompts`, 'success');
+                            setShowFieldManager(false);
+                          } else {
+                            showToast('Invalid file format', 'error');
+                          }
+                        } catch (error) {
+                          showToast('Failed to parse file', 'error');
+                        }
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                  📥 Import JSON Data
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <button
+                onClick={() => setShowFieldManager(false)}
+                className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
