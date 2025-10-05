@@ -100,28 +100,73 @@ The PRD outlines 5 development phases:
 4. **Enhanced Features**: Clipboard, categories, custom fields, onboarding
 5. **Polish and Deploy**: Testing, optimization, documentation
 
-## State Management Structure
+## Key Exports and Naming Conventions
 
-```javascript
-{
-  prompts: {
-    items: Map<string, Prompt>,
-    selectedId: string | null,
-    searchQuery: string,
-    searchField: string,
-    sortField: string,
-    sortDirection: 'asc' | 'desc',
-    currentPage: number
-  },
-  categories: {
-    items: Category[],
-    custom: string[]
-  },
-  settings: AppSettings,
-  ui: {
-    isCreating: boolean,
-    isLoading: boolean,
-    error: string | null
-  }
+### IMPORTANT: Always use these exact names to prevent naming conflicts
+
+#### Store Exports
+- **Main Store**: `usePromptStore` from `@/store/promptStore`
+  - Contains: prompts, customFields, selectedPromptId, and all CRUD operations
+  - DO NOT create alternative stores with different names
+
+#### Type Exports  
+- **Custom Fields**: `CustomField`, `FieldType` from `@/types/customFields`
+- **Prompt Type**: `Prompt` interface from `@/store/promptStore`
+
+#### Component Naming
+- **Main App**: `CustomFieldsApp` from `@/components/CustomFieldsApp`
+- **Field Manager**: `FieldManager` from `@/components/FieldManager`
+- **Dynamic Fields**: `DynamicField` from `@/components/DynamicField`
+- **Toast Provider**: `ToastProvider`, `useToast` from `@/hooks/useToast`
+
+### Naming Patterns to Follow
+- **Stores**: Always `use[Feature]Store` (e.g., `usePromptStore`, `useSettingsStore`)
+- **Components**: `[Feature][Type]` (e.g., `PromptList`, `FieldManager`)
+- **Hooks**: Always `use[Feature]` (e.g., `useToast`, `useAutoSave`)
+- **Types**: PascalCase interfaces/types (e.g., `Prompt`, `CustomField`)
+
+### File Organization Rules
+- **One store per feature**: Don't create multiple stores for the same feature
+- **Delete old implementations**: Remove backup files immediately
+- **Use .ts for logic**: Store files should be `.ts` not `.tsx`
+- **Centralize types**: Keep shared types in `src/types/` directory
+
+## Current State Management Structure
+
+```typescript
+// From usePromptStore in @/store/promptStore
+interface PromptStore {
+  // State
+  prompts: Prompt[];
+  selectedPromptId: string | null;
+  customFields: CustomField[];
+  
+  // Actions
+  addPrompt: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updatePrompt: (id: string, updates: Partial<Prompt>) => void;
+  deletePrompt: (id: string) => void;
+  selectPrompt: (id: string | null) => void;
+  getSelectedPrompt: () => Prompt | undefined;
+  
+  // Custom Fields
+  addCustomField: (field: Omit<CustomField, 'id'>) => void;
+  removeCustomField: (fieldId: string) => void;
+  updateCustomField: (fieldId: string, updates: Partial<CustomField>) => void;
+  
+  // Utils
+  updateLastUsed: (id: string) => void;
 }
+```
+
+## Type Checking Commands
+
+```bash
+# Check for TypeScript errors (run frequently)
+npx tsc --noEmit
+
+# Run linter
+npm run lint
+
+# Run tests
+npm test
 ```
