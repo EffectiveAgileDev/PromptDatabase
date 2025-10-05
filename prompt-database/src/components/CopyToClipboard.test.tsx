@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { CopyToClipboard } from './CopyToClipboard';
 
 // Mock clipboard API
@@ -105,25 +105,25 @@ describe('CopyToClipboard', () => {
     });
 
     it('should return to normal state after success timeout', async () => {
-      vi.useFakeTimers();
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
       
+      await act(async () => {
+        fireEvent.click(button);
+      });
+      
+      // Wait for success state
       await waitFor(() => {
         expect(screen.getByTestId('success-icon')).toBeInTheDocument();
       });
       
-      vi.advanceTimersByTime(2000);
-      
+      // Wait for state to return to normal (timeout is 2 seconds)
       await waitFor(() => {
         expect(screen.getByTestId('copy-icon')).toBeInTheDocument();
         expect(screen.queryByTestId('success-icon')).not.toBeInTheDocument();
-      });
-      
-      vi.useRealTimers();
-    });
+      }, { timeout: 3000 });
+    }, 10000);
 
     it('should handle clipboard API errors gracefully', async () => {
       mockWriteText.mockRejectedValue(new Error('Clipboard not available'));
@@ -131,7 +131,10 @@ describe('CopyToClipboard', () => {
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
+      
+      await act(async () => {
+        fireEvent.click(button);
+      });
       
       await waitFor(() => {
         expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
@@ -144,12 +147,20 @@ describe('CopyToClipboard', () => {
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
+      
+      await act(async () => {
+        fireEvent.click(button);
+      });
       
       await waitFor(() => {
         expect(screen.getByTestId('error-icon')).toBeInTheDocument();
       });
-    });
+      
+      // Wait for error state to reset (timeout is 2 seconds)
+      await waitFor(() => {
+        expect(screen.getByTestId('copy-icon')).toBeInTheDocument();
+      }, { timeout: 3000 });
+    }, 10000);
 
     it('should provide fallback when clipboard API not available', async () => {
       // Temporarily remove clipboard API
@@ -162,7 +173,10 @@ describe('CopyToClipboard', () => {
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
+      
+      await act(async () => {
+        fireEvent.click(button);
+      });
       
       await waitFor(() => {
         expect(screen.getByText(/copy manually/i)).toBeInTheDocument();
@@ -181,13 +195,18 @@ describe('CopyToClipboard', () => {
       expect(screen.getByText('Copy Prompt')).toBeInTheDocument();
     });
 
-    it('should be keyboard accessible', () => {
+    it('should be keyboard accessible', async () => {
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.keyDown(button, { key: 'Enter' });
       
-      expect(mockWriteText).toHaveBeenCalled();
+      await act(async () => {
+        fireEvent.keyDown(button, { key: 'Enter' });
+      });
+      
+      await waitFor(() => {
+        expect(mockWriteText).toHaveBeenCalled();
+      });
     });
 
     it('should have proper ARIA attributes', () => {
@@ -198,7 +217,7 @@ describe('CopyToClipboard', () => {
       expect(button).toHaveAttribute('type', 'button');
     });
 
-    it('should allow custom copy formats', () => {
+    it('should allow custom copy formats', async () => {
       const customFormatter = (text: string) => `Formatted: ${text}`;
       
       render(
@@ -209,9 +228,14 @@ describe('CopyToClipboard', () => {
       );
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
       
-      expect(mockWriteText).toHaveBeenCalledWith('Formatted: Test content to copy');
+      await act(async () => {
+        fireEvent.click(button);
+      });
+      
+      await waitFor(() => {
+        expect(mockWriteText).toHaveBeenCalledWith('Formatted: Test content to copy');
+      });
     });
   });
 });
