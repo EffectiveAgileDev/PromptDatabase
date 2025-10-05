@@ -1,6 +1,11 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useToast } from '../hooks/useToast';
 import { CopyToClipboard } from './CopyToClipboard';
+import { usePerformanceMonitor, PerformanceHints, VirtualList } from './PerformanceOptimizations';
+
+// Lazy load heavy components for better performance
+const FieldManager = lazy(() => import('./FieldManager').then(module => ({ default: module.FieldManager })));
+const ImportExport = lazy(() => import('./ImportExport').then(module => ({ default: module.ImportExport })));
 
 interface Prompt {
   id: string;
@@ -29,6 +34,9 @@ type SearchField = 'title' | 'promptText' | 'category' | 'tags' | 'all';
 
 export function MainApp() {
   const { showToast } = useToast();
+  
+  // Performance monitoring
+  const performanceMetrics = usePerformanceMonitor([]);
   const [categories] = useState([
     'Development', 'General', 'Project Management', 'Writing', 'Research', 
     'Marketing', 'Documentation', 'Analysis', 'Creative', 'Support'
@@ -156,14 +164,15 @@ export function MainApp() {
 
   const totalPages = Math.ceil(sortedPrompts.length / itemsPerPage);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
+  // Sort functionality would be implemented here
+  // const handleSort = (field: SortField) => {
+  //   if (sortField === field) {
+  //     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  //   } else {
+  //     setSortField(field);
+  //     setSortDirection('asc');
+  //   }
+  // };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this prompt?')) {
@@ -797,6 +806,9 @@ export function MainApp() {
           </div>
         </div>
       )}
+      
+      {/* Performance hints for development */}
+      {import.meta.env.DEV && <PerformanceHints metrics={performanceMetrics} />}
     </div>
   );
 }
