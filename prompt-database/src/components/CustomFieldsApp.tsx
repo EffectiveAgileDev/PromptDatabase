@@ -1,8 +1,11 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { FieldManager } from './FieldManager';
 import { DynamicField } from './DynamicField';
 import { CopyToClipboard } from './CopyToClipboard';
+import { Welcome } from './Welcome';
+import { CategoryManager } from './CategoryManager';
+import { ImportExport } from './ImportExport';
 import { useToast } from '@/hooks/useToast';
 import { Dialog } from '@headlessui/react';
 
@@ -31,9 +34,19 @@ export function CustomFieldsApp() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFieldManager, setShowFieldManager] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(prompts.length === 0);
   const itemsPerPage = 10;
 
   const selectedPrompt = getSelectedPrompt();
+
+  // Hide welcome screen when prompts are added
+  useEffect(() => {
+    if (prompts.length > 0 && showWelcome) {
+      setShowWelcome(false);
+    }
+  }, [prompts.length, showWelcome]);
 
   // Form data state
   const [formData, setFormData] = useState(() => {
@@ -216,6 +229,21 @@ export function CustomFieldsApp() {
     }))
   ];
 
+  // Show welcome screen for new users
+  if (showWelcome) {
+    return (
+      <Welcome
+        onCreateFirst={() => {
+          setShowWelcome(false);
+          setIsCreating(true);
+        }}
+        onSkipTour={() => {
+          setShowWelcome(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-4">
@@ -224,6 +252,18 @@ export function CustomFieldsApp() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-800">Prompt Database</h1>
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowImportExport(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                📊 Import/Export
+              </button>
+              <button
+                onClick={() => setShowCategoryManager(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                📁 Categories
+              </button>
               <button
                 onClick={() => setShowFieldManager(true)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -518,6 +558,18 @@ export function CustomFieldsApp() {
             </Dialog.Panel>
           </div>
         </Dialog>
+
+        {/* Category Manager Modal */}
+        <CategoryManager
+          isOpen={showCategoryManager}
+          onClose={() => setShowCategoryManager(false)}
+        />
+
+        {/* Import/Export Modal */}
+        <ImportExport
+          isOpen={showImportExport}
+          onClose={() => setShowImportExport(false)}
+        />
       </div>
     </div>
   );
