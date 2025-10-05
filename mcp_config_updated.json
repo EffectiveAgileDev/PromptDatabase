@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "node",
+      "args": ["/home/rod/mcp-servers/node_modules/@upstash/context7-mcp/dist/index.js"],
+      "env": {
+        "UPSTASH_REDIS_REST_URL": "https://valued-basilisk-46700.upstash.io",
+        "UPSTASH_REDIS_REST_TOKEN": "AbZsAAIjcDE5MWIyYmQ5MGY5MWE0NWIwOGVkZWU5MGNhMWFjNWRiN3AxMA"
+      }
+    },
+    "filesystem": {
+      "command": "node",
+      "args": ["/home/rod/mcp-servers/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js"],
+      "env": {
+        "ALLOWED_DIRECTORIES": "/home/rod/AI/Projects/WTEG:/home/rod/AI/Projects/PromptDatabase"
+      }
+    },
+    "fetch": {
+      "command": "mcp-server-fetch",
+      "args": [],
+      "env": {}
+    },
+    "sqlite": {
+      "command": "mcp-server-sqlite",
+      "args": ["--db-path", "/home/rod/AI/Projects/WTEG/WTEG/where-to-eat-guide/data/dev.db"],
+      "env": {}
+    },
+    "memory": {
+      "command": "node",
+      "args": ["/home/rod/mcp-servers/node_modules/@modelcontextprotocol/server-memory/dist/index.js"],
+      "env": {
+        "MEMORY_FILE_PATH": "/home/rod/AI/Projects/PromptDatabase/.mcp-memory.json"
+      }
+    },
+    "github": {
+      "command": "node",
+      "args": ["/home/rod/mcp-servers/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "YOUR_GITHUB_PAT_HERE",
+        "REPO_OWNER": "EffectiveAgileDev",
+        "REPO_NAME": "PromptDatabase"
+      }
+    }
+  }
+}

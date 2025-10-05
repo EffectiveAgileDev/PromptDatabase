@@ -57,3 +57,6 @@ pnpm-lock.yaml
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# MCP Memory Storage
+.mcp-memory.json

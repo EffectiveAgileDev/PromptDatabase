@@ -1,7 +1,12 @@
-import { EnhancedMainApp } from './components/EnhancedMainApp';
+import { ToastProvider } from '@/hooks/useToast';
+import { CustomFieldsApp } from '@/components/CustomFieldsApp';
 
 function App() {
-  return <EnhancedMainApp />;
+  return (
+    <ToastProvider>
+      <CustomFieldsApp />
+    </ToastProvider>
+  );
 }
 
 export default App;
