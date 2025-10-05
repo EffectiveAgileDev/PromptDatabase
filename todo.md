@@ -261,6 +261,36 @@
   - [ ] Navigation dark styling
   - [ ] Modal/dialog dark styling
 
+### Import/Export Functionality
+- [ ] Create `import-export.feature`
+  - [ ] Write "Import from CSV file" scenario
+  - [ ] Write "Import from Google Sheets export" scenario
+  - [ ] Write "Validate import data" scenario
+  - [ ] Write "Handle import errors" scenario
+  - [ ] Write "Export to CSV" scenario
+- [ ] Implement CSV import component
+  - [ ] RED: Write failing import tests
+  - [ ] GREEN: Basic file upload component
+  - [ ] REFACTOR: Add field mapping interface
+  - [ ] Add CSV parser with validation
+  - [ ] Support Google Sheets CSV format
+- [ ] Add import preview and validation
+  - [ ] Show preview table before import
+  - [ ] Validate required fields (title uniqueness)
+  - [ ] Handle missing or invalid data
+  - [ ] Show import progress with feedback
+  - [ ] Roll back on errors
+- [ ] Implement CSV export functionality
+  - [ ] Export all prompts to CSV
+  - [ ] Export filtered/searched prompts
+  - [ ] Include all fields and custom fields
+  - [ ] Google Sheets compatible format
+- [ ] Add bulk operations UI
+  - [ ] Import/Export buttons in header
+  - [ ] Progress indicators
+  - [ ] Success/error notifications
+  - [ ] Import history tracking
+
 ### Category Management
 - [ ] Implement category system
   - [ ] Create Category model

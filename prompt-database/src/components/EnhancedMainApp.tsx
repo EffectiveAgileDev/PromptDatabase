@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { CopyToClipboard } from './CopyToClipboard';
+import { ToastProvider, useToast } from '@/hooks/useToast';
 
 interface Prompt {
   id: string;
@@ -16,7 +18,8 @@ interface Prompt {
 type SortField = 'title' | 'category' | 'createdAt' | 'updatedAt';
 type SearchField = 'title' | 'promptText' | 'category' | 'tags' | 'all';
 
-export function EnhancedMainApp() {
+function EnhancedMainAppInner() {
+  const { showToast } = useToast();
   const [prompts, setPrompts] = useState<Prompt[]>([
     {
       id: '1',
@@ -149,6 +152,21 @@ export function EnhancedMainApp() {
       p.id === promptId ? { ...p, lastUsed: new Date() } : p
     ));
   };
+
+  const handleCopySuccess = useCallback((_text: string) => {
+    showToast('Copied to clipboard!', 'success');
+    // Update lastUsed timestamp for the selected prompt
+    if (selectedPrompt) {
+      setPrompts(prev => prev.map(p => 
+        p.id === selectedPrompt.id ? { ...p, lastUsed: new Date() } : p
+      ));
+    }
+  }, [showToast, selectedPrompt]);
+
+  const handleCopyError = useCallback((error: Error) => {
+    showToast('Failed to copy to clipboard', 'error');
+    console.error('Copy failed:', error);
+  }, [showToast]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -455,9 +473,19 @@ export function EnhancedMainApp() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Prompt Text
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Prompt Text
+                      </label>
+                      {selectedPrompt && formData.promptText && (
+                        <CopyToClipboard
+                          text={formData.promptText}
+                          buttonText="Copy"
+                          onCopy={handleCopySuccess}
+                          onError={handleCopyError}
+                        />
+                      )}
+                    </div>
                     <textarea
                       value={formData.promptText}
                       onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
@@ -558,5 +586,13 @@ export function EnhancedMainApp() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function EnhancedMainApp() {
+  return (
+    <ToastProvider>
+      <EnhancedMainAppInner />
+    </ToastProvider>
   );
 }
