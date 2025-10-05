@@ -2,6 +2,13 @@ import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react
 import { useToast } from '../hooks/useToast';
 import { CopyToClipboard } from './CopyToClipboard';
 import { usePerformanceMonitor, PerformanceHints, VirtualList } from './PerformanceOptimizations';
+import { 
+  AccessibilityTester, 
+  SkipNavigation, 
+  ScreenReaderAnnouncement,
+  useFocusManagement,
+  FormField
+} from './AccessibilityEnhancements';
 
 // Lazy load heavy components for better performance
 const FieldManager = lazy(() => import('./FieldManager').then(module => ({ default: module.FieldManager })));
@@ -34,9 +41,13 @@ type SearchField = 'title' | 'promptText' | 'category' | 'tags' | 'all';
 
 export function MainApp() {
   const { showToast } = useToast();
+  const { focusElement, trapFocus } = useFocusManagement();
   
   // Performance monitoring
   const performanceMetrics = usePerformanceMonitor([]);
+  
+  // Accessibility state
+  const [announcement, setAnnouncement] = useState('');
   const [categories] = useState([
     'Development', 'General', 'Project Management', 'Writing', 'Research', 
     'Marketing', 'Documentation', 'Analysis', 'Creative', 'Support'
@@ -360,13 +371,20 @@ export function MainApp() {
   }, [darkMode, showToast]);
 
   return (
-    <div 
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors"
-      style={{
-        backgroundColor: darkMode ? '#111827' : '#f9fafb',
-        color: darkMode ? '#ffffff' : '#000000'
-      }}
-    >
+    <>
+      <SkipNavigation />
+      <AccessibilityTester enabled={import.meta.env.DEV} />
+      {announcement && (
+        <ScreenReaderAnnouncement message={announcement} priority="polite" />
+      )}
+      
+      <div 
+        className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors"
+        style={{
+          backgroundColor: darkMode ? '#111827' : '#f9fafb',
+          color: darkMode ? '#ffffff' : '#000000'
+        }}
+      >
       <header 
         className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
         style={{
@@ -421,34 +439,53 @@ export function MainApp() {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-64px)]">
+      <main id="main-content" className="flex h-[calc(100vh-64px)]">
         {/* Prompt List */}
-        <div className="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <aside 
+          className="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto"
+          aria-label="Prompt list and search"
+        >
           <div className="p-4">
             {/* Search Controls */}
             <div className="mb-4 space-y-2">
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  placeholder="Search prompts..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  value={searchField}
-                  onChange={(e) => setSearchField(e.target.value as SearchField)}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Fields</option>
-                  <option value="title">Title</option>
-                  <option value="promptText">Prompt Text</option>
-                  <option value="category">Category</option>
-                  <option value="tags">Tags</option>
-                </select>
+                <div className="flex-1">
+                  <label htmlFor="search-input" className="sr-only">
+                    Search prompts
+                  </label>
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                      if (e.target.value) {
+                        setAnnouncement(`Searching for "${e.target.value}". ${sortedPrompts.length} results found.`);
+                      }
+                    }}
+                    placeholder="Search prompts..."
+                    aria-describedby="search-field-select"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="search-field-select" className="sr-only">
+                    Search in field
+                  </label>
+                  <select
+                    id="search-field-select"
+                    value={searchField}
+                    onChange={(e) => setSearchField(e.target.value as SearchField)}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Fields</option>
+                    <option value="title">Title</option>
+                    <option value="promptText">Prompt Text</option>
+                    <option value="category">Category</option>
+                    <option value="tags">Tags</option>
+                  </select>
+                </div>
               </div>
               
               {/* Sort Controls */}
@@ -477,10 +514,11 @@ export function MainApp() {
               Prompts ({sortedPrompts.length} / {prompts.length})
             </h2>
             
-            <div className="space-y-2">
+            <div className="space-y-2" role="list" aria-label="Prompt items">
               {paginatedPrompts.map((prompt) => (
                 <div
                   key={prompt.id}
+                  role="listitem"
                   className={`p-3 border rounded-lg transition-colors ${
                     selectedPrompt?.id === prompt.id
                       ? 'bg-blue-50 border-blue-300'
@@ -488,26 +526,34 @@ export function MainApp() {
                   }`}
                 >
                   <div className="flex justify-between items-start">
-                    <div
-                      onClick={() => handleEdit(prompt)}
-                      className="flex-1 cursor-pointer"
+                    <button
+                      onClick={() => {
+                        handleEdit(prompt);
+                        setAnnouncement(`Selected prompt: ${prompt.title}`);
+                      }}
+                      className="flex-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                      aria-describedby={`prompt-${prompt.id}-details`}
                     >
                       <h3 className="font-medium text-gray-900">{prompt.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {prompt.category || 'No category'}
-                      </p>
-                      {prompt.tags && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          Tags: {prompt.tags}
-                        </p>
-                      )}
-                    </div>
+                      <div id={`prompt-${prompt.id}-details`} className="text-sm text-gray-500 mt-1">
+                        <p>{prompt.category || 'No category'}</p>
+                        {prompt.tags && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Tags: {prompt.tags}
+                          </p>
+                        )}
+                      </div>
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(prompt.id);
+                        if (window.confirm(`Are you sure you want to delete "${prompt.title}"?`)) {
+                          handleDelete(prompt.id);
+                          setAnnouncement(`Deleted prompt: ${prompt.title}`);
+                        }
                       }}
-                      className="ml-2 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                      className="ml-2 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                      aria-label={`Delete prompt: ${prompt.title}`}
                     >
                       Delete
                     </button>
@@ -539,10 +585,13 @@ export function MainApp() {
               </div>
             )}
           </div>
-        </div>
+        </aside>
 
         {/* Prompt Form */}
-        <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-gray-800">
+        <section 
+          className="flex-1 p-6 overflow-y-auto bg-white dark:bg-gray-800"
+          aria-label="Prompt editor"
+        >
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
             {selectedPrompt ? 'Edit Prompt' : 'Create New Prompt'}
           </h2>
@@ -697,8 +746,8 @@ export function MainApp() {
               {selectedPrompt ? 'Update Prompt' : 'Create Prompt'}
             </button>
           </form>
-        </div>
-      </div>
+        </section>
+      </main>
 
       {/* Simple Field Manager Modal */}
       {showFieldManager && (
@@ -809,6 +858,7 @@ export function MainApp() {
       
       {/* Performance hints for development */}
       {import.meta.env.DEV && <PerformanceHints metrics={performanceMetrics} />}
-    </div>
+      </div>
+    </>
   );
 }
