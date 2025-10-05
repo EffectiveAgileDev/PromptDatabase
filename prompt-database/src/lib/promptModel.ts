@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+import { usePromptStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof usePromptStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
 import { storageService } from './storage';
 
 export interface CreatePromptData {

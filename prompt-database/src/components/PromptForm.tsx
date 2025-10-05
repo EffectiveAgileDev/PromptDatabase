@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppStore } from '@/store/promptStore';
+import { usePromptStore } from '@/store/promptStore';
 import { validatePrompt } from '@/lib/validation';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { promptModel } from '@/lib/promptModel';
@@ -23,7 +23,7 @@ interface PromptFormProps {
 }
 
 export function PromptForm({ prompt }: PromptFormProps) {
-  const { addPrompt, updatePrompt, prompts } = useAppStore();
+  const { addPrompt, updatePrompt, prompts } = usePromptStore();
   
   const [formData, setFormData] = useState({
     title: prompt?.title || '',
@@ -37,12 +37,16 @@ export function PromptForm({ prompt }: PromptFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Auto-save for existing prompts
-  const { isAutoSaving } = useAutoSave(
-    formData,
-    (data) => prompt && updatePrompt(prompt.id, data),
-    500,
-    !!prompt
-  );
+  const { isAutoSaving } = useAutoSave({
+    data: formData,
+    onSave: async (data) => {
+      if (prompt) {
+        await updatePrompt(prompt.id, data);
+      }
+    },
+    delay: 500,
+    enabled: !!prompt
+  });
 
   const validateForm = () => {
     const validation = validatePrompt(formData, prompts.items, prompt?.id);

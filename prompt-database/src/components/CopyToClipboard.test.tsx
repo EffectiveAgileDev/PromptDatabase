@@ -57,7 +57,10 @@ describe('CopyToClipboard', () => {
       render(<CopyToClipboard {...defaultProps} />);
       
       const button = screen.getByRole('button');
-      fireEvent.click(button);
+      
+      await act(async () => {
+        fireEvent.click(button);
+      });
       
       expect(mockWriteText).toHaveBeenCalledWith('Test content to copy');
     });

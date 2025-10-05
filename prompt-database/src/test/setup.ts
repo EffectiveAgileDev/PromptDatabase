@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import { server } from '@/mocks/server';
 
 // Establish API mocking before all tests.
