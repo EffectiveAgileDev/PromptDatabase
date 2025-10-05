@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { Dialog } from '@headlessui/react';
-
-export type FieldType = 'text' | 'number' | 'select' | 'textarea';
-
-export interface CustomField {
-  id: string;
-  name: string;
-  type: FieldType;
-  options?: string[];
-}
+import type { CustomField, FieldType } from '@/types/customFields';
 
 interface AddFieldDialogProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { FieldManager } from './FieldManager';
 import { DynamicField } from './DynamicField';
@@ -64,7 +64,7 @@ export function CustomFieldsApp() {
     if (!searchQuery) return prompts;
     
     const query = searchQuery.toLowerCase();
-    return prompts.filter(prompt => {
+    return prompts.filter((prompt: any) => {
       if (searchField === 'all') {
         return (
           prompt.title?.toLowerCase().includes(query) ||
@@ -80,7 +80,7 @@ export function CustomFieldsApp() {
       }
       
       // Check if searching in a custom field
-      const customField = customFields.find(f => f.name === searchField);
+      const customField = customFields.find((f: any) => f.name === searchField);
       if (customField) {
         const fieldValue = prompt.customFields?.[customField.id];
         return fieldValue && String(fieldValue).toLowerCase().includes(query);
@@ -96,7 +96,7 @@ export function CustomFieldsApp() {
   const sortedPrompts = useMemo(() => {
     const sorted = [...filteredPrompts].sort((a, b) => {
       // Check if sorting by a custom field
-      const customField = customFields.find(f => f.name === sortField);
+      const customField = customFields.find((f: any) => f.name === sortField);
       let aValue, bValue;
       
       if (customField) {
@@ -193,7 +193,7 @@ export function CustomFieldsApp() {
     }));
   };
 
-  const handleSort = (field: SortField | string) => {
+  const _handleSort = (field: SortField | string) => {
     if (field === sortField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -210,7 +210,7 @@ export function CustomFieldsApp() {
     { value: 'promptText', label: '💬 Prompt Text' },
     { value: 'category', label: '📁 Category' },
     { value: 'tags', label: '🏷️ Tags' },
-    ...customFields.map(field => ({
+    ...customFields.map((field: any) => ({
       value: field.name,
       label: `⚙️ ${field.name}`
     }))
@@ -312,7 +312,7 @@ export function CustomFieldsApp() {
                       {/* Show custom field values */}
                       {customFields.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {customFields.slice(0, 3).map(field => {
+                          {customFields.slice(0, 3).map((field: any) => {
                             const value = prompt.customFields?.[field.id];
                             if (!value) return null;
                             return (
@@ -389,7 +389,6 @@ export function CustomFieldsApp() {
                         text={formData.promptText}
                         buttonText="Copy"
                         onCopy={handleCopySuccess}
-                        className="text-xs"
                       />
                     )}
                   </div>
@@ -434,7 +433,7 @@ export function CustomFieldsApp() {
                 {customFields.length > 0 && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-sm font-medium text-gray-700">Custom Fields</h3>
-                    {customFields.map(field => (
+                    {customFields.map((field: any) => (
                       <DynamicField
                         key={field.id}
                         field={field}

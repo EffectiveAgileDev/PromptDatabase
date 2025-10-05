@@ -1,5 +1,5 @@
 import React from 'react';
-import type { CustomField } from './FieldManager';
+import type { CustomField } from '@/types/customFields';
 
 interface DynamicFieldProps {
   field: CustomField;
