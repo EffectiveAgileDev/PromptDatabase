@@ -190,7 +190,7 @@ export function CustomFieldsApp() {
   // Auto-save functionality for existing prompts
   const { isAutoSaving, lastSaved, forceSave } = useAutoSave({
     data: formData,
-    onSave: useCallback(async (data) => {
+    onSave: useCallback(async (data: typeof formData) => {
       // Only auto-save existing prompts, not new ones
       if (selectedPrompt && !isCreating && data.title.trim()) {
         console.log('Auto-saving prompt:', selectedPrompt.id, data.title);
@@ -202,7 +202,7 @@ export function CustomFieldsApp() {
   });
 
   // Keyboard shortcuts
-  const { formatShortcut } = useKeyboardShortcuts({
+  useKeyboardShortcuts({
     shortcuts: [
       {
         key: 'n',
@@ -485,7 +485,7 @@ export function CustomFieldsApp() {
             </div>
 
             <div className="space-y-2 mb-4" role="listbox" aria-label="Prompt list">
-              {paginatedPrompts.map((prompt, index) => (
+              {paginatedPrompts.map((prompt) => (
                 <div
                   key={prompt.id}
                   onClick={() => handleSelectPrompt(prompt)}
@@ -744,7 +744,7 @@ export function CustomFieldsApp() {
                     </button>
                   )}
                 </div>
-              </div>
+              </form>
             )}
           </div>
         </div>
