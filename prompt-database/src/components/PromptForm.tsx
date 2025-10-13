@@ -49,7 +49,7 @@ export function PromptForm({ prompt }: PromptFormProps) {
   });
 
   const validateForm = () => {
-    const validation = validatePrompt(formData, prompts.items, prompt?.id);
+    const validation = validatePrompt(formData, prompts, prompt?.id);
     setErrors(validation.errors);
     return validation.isValid;
   };

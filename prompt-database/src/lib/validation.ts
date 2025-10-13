@@ -12,7 +12,7 @@ export function validatePrompt(
     expectedOutput?: string;
     notes?: string;
   },
-  existingPrompts: Map<string, Prompt>,
+  existingPrompts: Prompt[] | Map<string, Prompt>,
   currentPromptId?: string
 ): ValidationResult {
   const errors: Record<string, string> = {};
@@ -22,9 +22,13 @@ export function validatePrompt(
     errors.title = 'Title is required';
   } else {
     // Check title uniqueness
-    const existingPrompt = Array.from(existingPrompts.values())
+    const promptsArray = Array.isArray(existingPrompts)
+      ? existingPrompts
+      : Array.from(existingPrompts.values());
+
+    const existingPrompt = promptsArray
       .find(p => p.title === formData.title.trim() && p.id !== currentPromptId);
-    
+
     if (existingPrompt) {
       errors.title = 'Title must be unique';
     }

@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PromptList } from './PromptList';
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+import type { Prompt } from '@/store/promptStore';
 
 // Mock the store
-const mockUseAppStore = vi.fn();
+const mockUsePromptStore = vi.fn();
 vi.mock('@/store/promptStore', () => ({
-  useAppStore: () => mockUseAppStore(),
+  usePromptStore: () => mockUsePromptStore(),
 }));
 
 describe('PromptList', () => {
@@ -40,9 +40,9 @@ describe('PromptList', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       prompts: {
-        items: new Map(samplePrompts.map(p => [p.id, p])),
+        items: samplePrompts,
         selectedId: null,
         searchQuery: '',
         sortField: 'updatedAt',
@@ -76,9 +76,9 @@ describe('PromptList', () => {
   });
 
   it('displays selected prompt with visual indicator', () => {
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       prompts: {
-        items: new Map(samplePrompts.map(p => [p.id, p])),
+        items: samplePrompts,
         selectedId: '1',
         searchQuery: '',
         sortField: 'updatedAt',
@@ -91,9 +91,9 @@ describe('PromptList', () => {
       setSortField: mockSetSortField,
       setSortDirection: mockSetSortDirection,
     });
-    
+
     render(<PromptList />);
-    
+
     const selectedItem = screen.getByTestId('prompt-list-item-1');
     expect(selectedItem).toHaveClass('bg-blue-50', 'border-blue-200');
   });
@@ -110,9 +110,9 @@ describe('PromptList', () => {
 
   it('toggles sort direction when clicking same header', async () => {
     const user = userEvent.setup();
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       prompts: {
-        items: new Map(samplePrompts.map(p => [p.id, p])),
+        items: samplePrompts,
         selectedId: null,
         searchQuery: '',
         sortField: 'title',
@@ -125,19 +125,19 @@ describe('PromptList', () => {
       setSortField: mockSetSortField,
       setSortDirection: mockSetSortDirection,
     });
-    
+
     render(<PromptList />);
-    
+
     const titleHeader = screen.getByTestId('sort-header-title');
     await user.click(titleHeader);
-    
+
     expect(mockSetSortDirection).toHaveBeenCalledWith('desc');
   });
 
   it('shows sort direction indicators', () => {
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       prompts: {
-        items: new Map(samplePrompts.map(p => [p.id, p])),
+        items: samplePrompts,
         selectedId: null,
         searchQuery: '',
         sortField: 'title',
@@ -150,9 +150,9 @@ describe('PromptList', () => {
       setSortField: mockSetSortField,
       setSortDirection: mockSetSortDirection,
     });
-    
+
     render(<PromptList />);
-    
+
     expect(screen.getByTestId('sort-indicator-asc')).toBeInTheDocument();
   });
 
@@ -166,9 +166,9 @@ describe('PromptList', () => {
   });
 
   it('shows empty state when no prompts', () => {
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       prompts: {
-        items: new Map(),
+        items: [],
         selectedId: null,
         searchQuery: '',
         sortField: 'updatedAt',
@@ -181,9 +181,9 @@ describe('PromptList', () => {
       setSortField: mockSetSortField,
       setSortDirection: mockSetSortDirection,
     });
-    
+
     render(<PromptList />);
-    
+
     expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     expect(screen.getByText('No prompts found')).toBeInTheDocument();
   });

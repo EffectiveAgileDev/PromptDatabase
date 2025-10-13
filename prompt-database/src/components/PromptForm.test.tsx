@@ -3,12 +3,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PromptForm } from './PromptForm';
 import { ToastProvider } from '@/hooks/useToast';
-import { useAppStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof useAppStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+import type { Prompt } from '@/store/promptStore';
 
 // Mock the store
-const mockUseAppStore = vi.fn();
+const mockUsePromptStore = vi.fn();
 vi.mock('@/store/promptStore', () => ({
-  useAppStore: () => mockUseAppStore(),
+  usePromptStore: () => mockUsePromptStore(),
 }));
 
 describe('PromptForm', () => {
@@ -26,13 +26,11 @@ describe('PromptForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       addPrompt: mockAddPrompt,
       updatePrompt: mockUpdatePrompt,
       setError: mockSetError,
-      prompts: {
-        items: new Map(),
-      },
+      prompts: [],
     });
   });
 
@@ -128,22 +126,20 @@ describe('PromptForm', () => {
 
   it('validates title uniqueness', async () => {
     const user = userEvent.setup();
-    mockUseAppStore.mockReturnValue({
+    mockUsePromptStore.mockReturnValue({
       addPrompt: mockAddPrompt,
       updatePrompt: mockUpdatePrompt,
       setError: mockSetError,
-      prompts: {
-        items: new Map([
-          ['1', { id: '1', title: 'Existing Title', createdAt: new Date(), updatedAt: new Date() }]
-        ])
-      }
+      prompts: [
+        { id: '1', title: 'Existing Title', createdAt: new Date(), updatedAt: new Date() }
+      ]
     });
-    
+
     renderWithProvider();
-    
+
     await user.type(screen.getByTestId('prompt-title-input'), 'Existing Title');
     await user.click(screen.getByTestId('save-prompt-button'));
-    
+
     expect(screen.getByText('Title must be unique')).toBeInTheDocument();
     expect(mockAddPrompt).not.toHaveBeenCalled();
   });
