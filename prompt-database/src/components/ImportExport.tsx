@@ -125,13 +125,15 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
           parsedData = Array.isArray(jsonData) ? jsonData : jsonData.prompts || [];
         } else if (file.name.endsWith('.csv')) {
           // Simple CSV parsing (would use a proper CSV parser in production)
-          const lines = content.split('\n');
-          const headers = lines[0].split(',');
+          const lines = content.split('\n').filter(line => line.trim());
+          const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
           parsedData = lines.slice(1).map(line => {
             const values = line.split(',');
             const obj: any = {};
             headers.forEach((header, index) => {
-              obj[header.trim()] = values[index]?.trim().replace(/^"|"$/g, '') || '';
+              // Normalize header to lowercase for consistent access
+              const normalizedHeader = header.toLowerCase();
+              obj[normalizedHeader] = values[index]?.trim().replace(/^"|"$/g, '') || '';
             });
             return obj;
           });
@@ -179,15 +181,16 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
       
       for (const prompt of importPreview.valid) {
         // Add basic validation and transformation
+        // Handle various field name variations (case-insensitive)
         const promptData = {
-          title: prompt.title,
-          promptText: prompt.promptText || prompt.content || '',
-          category: prompt.category || '',
-          tags: prompt.tags || '',
-          expectedOutput: prompt.expectedOutput || '',
-          notes: prompt.notes || ''
+          title: prompt.title || prompt.name || prompt.Title || prompt.Name || '',
+          promptText: prompt.promptText || prompt.prompttext || prompt.content || prompt.text || prompt.prompt || '',
+          category: prompt.category || prompt.Category || '',
+          tags: prompt.tags || prompt.Tags || '',
+          expectedOutput: prompt.expectedOutput || prompt.expectedoutput || prompt.expected_output || '',
+          notes: prompt.notes || prompt.Notes || ''
         };
-        
+
         addPrompt(promptData);
         importCount++;
       }
