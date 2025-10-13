@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { usePromptStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof usePromptStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+import type { Prompt } from '@/store/promptStore';
 import { storageService } from './storage';
 
 export interface CreatePromptData {
@@ -65,7 +65,7 @@ export class PromptModel {
     if (data.title && data.title.trim()) {
       const allPrompts = await storageService.getAllPrompts();
       const titleExists = allPrompts.some(
-        p => p.title.toLowerCase() === data.title!.trim().toLowerCase() && p.id !== id
+        p => p.title.toLowerCase() === data.title.trim().toLowerCase() && p.id !== id
       );
 
       if (titleExists) {
@@ -95,9 +95,8 @@ export class PromptModel {
     await storageService.deletePrompt(id);
   }
 
-  async getPrompt(id: string): Promise<Prompt | null> {
-    const prompt = await storageService.getPrompt(id);
-    return prompt || null;
+  async getPrompt(id: string): Promise<Prompt | undefined> {
+    return await storageService.getPrompt(id);
   }
 
   async getAllPrompts(): Promise<Prompt[]> {

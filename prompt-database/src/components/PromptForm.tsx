@@ -39,9 +39,9 @@ export function PromptForm({ prompt }: PromptFormProps) {
   // Auto-save for existing prompts
   const { isAutoSaving } = useAutoSave({
     data: formData,
-    onSave: async (data) => {
+    onSave: (data) => {
       if (prompt) {
-        await updatePrompt(prompt.id, data);
+        updatePrompt(prompt.id, data);
       }
     },
     delay: 500,

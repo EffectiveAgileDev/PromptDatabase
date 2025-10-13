@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 
 interface SamplePrompt {
@@ -44,7 +43,6 @@ interface WelcomeProps {
 
 export function Welcome({ onCreateFirst, onSkipTour }: WelcomeProps) {
   const { addPrompt } = usePromptStore();
-  const [selectedTemplate, setSelectedTemplate] = useState<SamplePrompt | null>(null);
 
   const handleUseTemplate = (template: SamplePrompt) => {
     addPrompt({

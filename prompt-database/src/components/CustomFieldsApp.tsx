@@ -99,9 +99,20 @@ export function CustomFieldsApp() {
           prompt.tags?.toLowerCase().includes(query) ||
           prompt.notes?.toLowerCase().includes(query) ||
           // Search in custom fields
-          Object.values(prompt.customFields || {}).some(value =>
-            String(value).toLowerCase().includes(query)
-          )
+          Object.values(prompt.customFields || {}).some(value => {
+            if (value === undefined || value === null) return false;
+            // Handle primitive types (string, number, boolean) vs objects
+            let stringValue: string;
+            if (typeof value === 'string') {
+              stringValue = value;
+            } else if (typeof value === 'number' || typeof value === 'boolean') {
+              stringValue = String(value);
+            } else {
+              // Must be an object, use JSON.stringify
+              stringValue = JSON.stringify(value);
+            }
+            return stringValue.toLowerCase().includes(query);
+          })
         );
       }
       
@@ -199,7 +210,7 @@ export function CustomFieldsApp() {
   // Auto-save functionality for existing prompts
   const { isAutoSaving, lastSaved, forceSave } = useAutoSave({
     data: formData,
-    onSave: useCallback(async (data: typeof formData) => {
+    onSave: useCallback((data: typeof formData) => {
       // Only auto-save existing prompts, not new ones
       if (selectedPrompt && !isCreating && data.title.trim()) {
         console.log('Auto-saving prompt:', selectedPrompt.id, data.title);
@@ -233,7 +244,7 @@ export function CustomFieldsApp() {
         key: 'f',
         ctrlKey: true,
         action: () => {
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          const searchInput = document.querySelector('input[type="text"]');
           searchInput?.focus();
         },
         description: 'Focus search'
@@ -241,7 +252,7 @@ export function CustomFieldsApp() {
       {
         key: '/',
         action: () => {
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          const searchInput = document.querySelector('input[type="text"]');
           searchInput?.focus();
         },
         description: 'Focus search'
@@ -283,7 +294,7 @@ export function CustomFieldsApp() {
         action: () => {
           if (selectedPrompt && formData.promptText) {
             const textToCopy = formatCopyText(formData.promptText);
-            navigator.clipboard?.writeText(textToCopy);
+            void navigator.clipboard?.writeText(textToCopy);
             updateLastUsed(selectedPrompt.id);
             showToast('Prompt copied to clipboard', 'success');
           }
@@ -315,7 +326,7 @@ export function CustomFieldsApp() {
     return text;
   }, [includeExpectedOutput, formData.expectedOutput]);
 
-  const handleCopySuccess = useCallback((_text: string) => {
+  const handleCopySuccess = useCallback(() => {
     if (selectedPrompt) {
       updateLastUsed(selectedPrompt.id);
     }
@@ -331,11 +342,11 @@ export function CustomFieldsApp() {
     }));
   };
 
-  const _handleSort = (field: SortField | string) => {
+  const handleSort = (field: SortField) => {
     if (field === sortField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortField(field as SortField);
+      setSortField(field);
       setSortDirection('asc');
     }
     setCurrentPage(1);
@@ -415,7 +426,7 @@ export function CustomFieldsApp() {
           <div className="flex gap-2" role="search" aria-label="Search prompts">
             <div className="flex-1 relative">
               <label htmlFor="search-input" className="sr-only">
-                Search prompts in {searchFieldOptions.find(o => o.value === searchField)?.label.replace(/[🔍📝💬📁🏷️⚙️] /, '')}
+                Search prompts in {searchFieldOptions.find(o => o.value === searchField)?.label.replace(/^[\p{Emoji}\s]+/gu, '')}
               </label>
               <input
                 id="search-input"
@@ -425,7 +436,7 @@ export function CustomFieldsApp() {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                placeholder={`Search in ${searchFieldOptions.find(o => o.value === searchField)?.label.replace(/[🔍📝💬📁🏷️⚙️] /, '')}...`}
+                placeholder={`Search in ${searchFieldOptions.find(o => o.value === searchField)?.label.replace(/^[\p{Emoji}\s]+/gu, '')}...`}
                 className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-describedby="search-results"
               />
@@ -472,7 +483,7 @@ export function CustomFieldsApp() {
                   <label className="text-sm text-gray-600 dark:text-gray-300">Sort by:</label>
                   <select
                     value={sortField}
-                    onChange={(e) => _handleSort(e.target.value)}
+                    onChange={(e) => handleSort(e.target.value as SortField)}
                     className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="updatedAt">Last Modified</option>

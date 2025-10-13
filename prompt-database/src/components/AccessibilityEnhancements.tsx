@@ -73,7 +73,7 @@ export function ScreenReaderAnnouncement({ message, priority = 'polite' }: {
 // Focus management hook
 export function useFocusManagement() {
   const focusElement = (selector: string) => {
-    const element = document.querySelector(selector) as HTMLElement;
+    const element = document.querySelector(selector);
     if (element) {
       element.focus();
       return true;

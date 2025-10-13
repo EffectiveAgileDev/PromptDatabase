@@ -1,18 +1,12 @@
-import { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useToast } from '../hooks/useToast';
 import { CopyToClipboard } from './CopyToClipboard';
-import { usePerformanceMonitor, PerformanceHints, VirtualList } from './PerformanceOptimizations';
-import { 
-  AccessibilityTester, 
-  SkipNavigation, 
-  ScreenReaderAnnouncement,
-  useFocusManagement,
-  FormField
+import { usePerformanceMonitor, PerformanceHints } from './PerformanceOptimizations';
+import {
+  AccessibilityTester,
+  SkipNavigation,
+  ScreenReaderAnnouncement
 } from './AccessibilityEnhancements';
-
-// Lazy load heavy components for better performance
-const FieldManager = lazy(() => import('./FieldManager').then(module => ({ default: module.FieldManager })));
-const ImportExport = lazy(() => import('./ImportExport').then(module => ({ default: module.ImportExport })));
 
 interface Prompt {
   id: string;
@@ -41,7 +35,6 @@ type SearchField = 'title' | 'promptText' | 'category' | 'tags' | 'all';
 
 export function MainApp() {
   const { showToast } = useToast();
-  const { focusElement, trapFocus } = useFocusManagement();
   
   // Performance monitoring
   const performanceMetrics = usePerformanceMonitor([]);
@@ -149,7 +142,11 @@ export function MainApp() {
         );
       }
       const fieldValue = prompt[searchField as keyof Prompt];
-      return fieldValue?.toString().toLowerCase().includes(query);
+      if (fieldValue === undefined || fieldValue === null) return false;
+      const stringValue = typeof fieldValue === 'object'
+        ? JSON.stringify(fieldValue)
+        : String(fieldValue);
+      return stringValue.toLowerCase().includes(query);
     });
   }, [prompts, searchQuery, searchField]);
 
@@ -247,11 +244,11 @@ export function MainApp() {
     });
   };
 
-  const handleCopySuccess = (text: string) => {
+  const handleCopySuccess = () => {
     if (selectedPrompt) {
       // Update lastUsed timestamp
-      setPrompts(prev => prev.map(p => 
-        p.id === selectedPrompt.id 
+      setPrompts(prev => prev.map(p =>
+        p.id === selectedPrompt.id
           ? { ...p, lastUsed: new Date(), updatedAt: new Date() }
           : p
       ));
@@ -311,22 +308,22 @@ export function MainApp() {
         const activeElement = document.activeElement;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
           e.preventDefault();
-          navigator.clipboard?.writeText(formData.promptText);
-          handleCopySuccess(formData.promptText);
+          void navigator.clipboard?.writeText(formData.promptText);
+          handleCopySuccess();
         }
       }
 
       // Ctrl+F: Focus search
       if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
-        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        const searchInput = document.querySelector('input[type="text"]');
         searchInput?.focus();
       }
 
       // /: Focus search
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
-        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        const searchInput = document.querySelector('input[type="text"]');
         searchInput?.focus();
       }
     };
@@ -829,7 +826,7 @@ export function MainApp() {
                           } else {
                             showToast('Invalid file format', 'error');
                           }
-                        } catch (error) {
+                        } catch {
                           showToast('Failed to parse file', 'error');
                         }
                       };

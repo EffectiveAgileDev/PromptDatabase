@@ -27,13 +27,11 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
   
   // Import state
   const [importStep, setImportStep] = useState<ImportStep>('upload');
-  const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleExport = useCallback(async () => {
+  const handleExport = useCallback(() => {
     try {
-      let dataToExport = prompts;
+      const dataToExport = prompts;
       
       // Apply scope filtering (simplified for demo)
       if (exportScope === 'category') {
@@ -113,8 +111,7 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
-    setImportFile(file);
+
     setImportStep('preview');
     
     const reader = new FileReader();
@@ -172,10 +169,9 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
     reader.readAsText(file);
   }, [prompts, showToast]);
 
-  const handleImport = useCallback(async () => {
+  const handleImport = useCallback(() => {
     if (!importPreview) return;
-    
-    setIsProcessing(true);
+
     setImportStep('processing');
     
     try {
@@ -199,20 +195,15 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
       showToast(`Successfully imported ${importCount} prompts`, 'success');
       onClose();
       setImportStep('upload');
-      setImportFile(null);
       setImportPreview(null);
     } catch (error) {
       showToast('Import failed: ' + String(error), 'error');
-    } finally {
-      setIsProcessing(false);
     }
   }, [importPreview, addPrompt, showToast, onClose]);
 
   const resetImport = () => {
     setImportStep('upload');
-    setImportFile(null);
     setImportPreview(null);
-    setIsProcessing(false);
   };
 
   return (

@@ -55,7 +55,7 @@ export const CopyToClipboard: React.FC<CopyToClipboardProps> = ({
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      copyToClipboard();
+      void copyToClipboard();
     }
   }, [copyToClipboard]);
 

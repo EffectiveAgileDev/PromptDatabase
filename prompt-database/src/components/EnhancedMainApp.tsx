@@ -146,18 +146,18 @@ function EnhancedMainAppInner() {
   };
 
   const handleCopyToClipboard = (text: string, promptId: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
     // Update lastUsed timestamp
-    setPrompts(prev => prev.map(p => 
+    setPrompts(prev => prev.map(p =>
       p.id === promptId ? { ...p, lastUsed: new Date() } : p
     ));
   };
 
-  const handleCopySuccess = useCallback((_text: string) => {
+  const handleCopySuccess = useCallback(() => {
     showToast('Copied to clipboard!', 'success');
     // Update lastUsed timestamp for the selected prompt
     if (selectedPrompt) {
-      setPrompts(prev => prev.map(p => 
+      setPrompts(prev => prev.map(p =>
         p.id === selectedPrompt.id ? { ...p, lastUsed: new Date() } : p
       ));
     }

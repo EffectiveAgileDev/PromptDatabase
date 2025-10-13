@@ -60,21 +60,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  const getFieldDisplayName = (field: SearchField): string => {
-    switch (field) {
-      case 'title':
-        return 'Title';
-      case 'promptText':
-        return 'Content';
-      case 'category':
-        return 'Category';
-      case 'tags':
-        return 'Tags';
-      default:
-        return 'Title';
-    }
-  };
-
   const getResultText = (count: number): string => {
     if (count === 1) {
       return '1 result';

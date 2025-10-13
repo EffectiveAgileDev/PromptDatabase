@@ -5,7 +5,7 @@ import App from './App.tsx'
 
 console.log('Main.tsx is loading...');
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,

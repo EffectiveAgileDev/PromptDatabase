@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { useToast } from '@/hooks/useToast';
 
 interface TestData {
   title: string;
