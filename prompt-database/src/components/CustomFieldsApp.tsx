@@ -45,6 +45,22 @@ export function CustomFieldsApp() {
     const saved = localStorage.getItem('includeExpectedOutput');
     return saved === null ? true : saved === 'true'; // Default to true
   });
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem('darkMode');
+      if (stored !== null) {
+        return stored === 'true';
+      }
+      // Check system preference
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error reading dark mode preference:', error);
+      return false;
+    }
+  });
   const itemsPerPage = 10;
 
   const selectedPrompt = getSelectedPrompt();
@@ -60,6 +76,29 @@ export function CustomFieldsApp() {
   useEffect(() => {
     localStorage.setItem('includeExpectedOutput', String(includeExpectedOutput));
   }, [includeExpectedOutput]);
+
+  // Initialize dark mode on mount
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  // Dark mode effect
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('darkMode', darkMode.toString());
+    } catch (error) {
+      console.error('Error saving dark mode preference:', error);
+    }
+  }, [darkMode]);
 
   // Form data state
   const [formData, setFormData] = useState(() => {
@@ -352,6 +391,12 @@ export function CustomFieldsApp() {
     setCurrentPage(1);
   };
 
+  const toggleDarkMode = useCallback(() => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    showToast(`Switched to ${newMode ? 'dark' : 'light'} mode`, 'success');
+  }, [darkMode, showToast]);
+
   // Build search field options including custom fields
   const searchFieldOptions = [
     { value: 'all', label: '🔍 All Fields' },
@@ -381,16 +426,23 @@ export function CustomFieldsApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Prompt Database</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Prompt Database</h1>
             <div className="flex gap-2">
               <button
+                onClick={toggleDarkMode}
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+              <button
                 onClick={() => setShowKeyboardHelp(true)}
-                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 title="Keyboard shortcuts (?)"
               >
                 ⌨️
@@ -437,7 +489,7 @@ export function CustomFieldsApp() {
                   setCurrentPage(1);
                 }}
                 placeholder={`Search in ${searchFieldOptions.find(o => o.value === searchField)?.label.replace(/^[\p{Emoji}\s]+/gu, '')}...`}
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-describedby="search-results"
               />
               <span className="absolute left-3 top-2.5 text-gray-400" aria-hidden="true">🔍</span>
@@ -449,7 +501,7 @@ export function CustomFieldsApp() {
               id="search-field-select"
               value={searchField}
               onChange={(e) => setSearchField(e.target.value as SearchField)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Search field selector"
             >
               {searchFieldOptions.map(option => (
@@ -459,9 +511,9 @@ export function CustomFieldsApp() {
               ))}
             </select>
           </div>
-          
+
           {searchQuery && (
-            <div id="search-results" className="mt-2 text-sm text-gray-600" aria-live="polite" aria-atomic="true">
+            <div id="search-results" className="mt-2 text-sm text-gray-600 dark:text-gray-400" aria-live="polite" aria-atomic="true">
               Found {filteredPrompts.length} result{filteredPrompts.length !== 1 ? 's' : ''} for "{searchQuery}"
             </div>
           )}
@@ -475,9 +527,9 @@ export function CustomFieldsApp() {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Prompt List */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Prompts</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Prompts</h2>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <label className="text-sm text-gray-600 dark:text-gray-300">Sort by:</label>
@@ -529,21 +581,21 @@ export function CustomFieldsApp() {
                   }}
                   className={`p-4 rounded-lg cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     selectedPromptId === prompt.id
-                      ? 'bg-blue-50 border-2 border-blue-500'
-                      : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500 dark:border-blue-400'
+                      : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
                   }`}
                   aria-describedby={`prompt-${prompt.id}-details`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{prompt.title}</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">{prompt.title}</h3>
                       {prompt.category && (
-                        <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mt-1">
+                        <span className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded mt-1">
                           {prompt.category}
                         </span>
                       )}
                       {prompt.promptText && (
-                        <p className="text-sm text-gray-600 line-clamp-2 mt-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-2">
                           {prompt.promptText}
                         </p>
                       )}
@@ -584,17 +636,17 @@ export function CustomFieldsApp() {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50"
+                  className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Previous
                 </button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50"
+                  className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -603,8 +655,8 @@ export function CustomFieldsApp() {
           </div>
 
           {/* Prompt Details */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4" id="prompt-form-heading">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white" id="prompt-form-heading">
               {isCreating ? 'Create New Prompt' : selectedPrompt ? 'Edit Prompt' : 'Select a Prompt'}
             </h2>
 
@@ -617,7 +669,7 @@ export function CustomFieldsApp() {
                 </div>
                 
                 <div>
-                  <label htmlFor="prompt-title" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="prompt-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Title *
                   </label>
                   <input
@@ -625,7 +677,7 @@ export function CustomFieldsApp() {
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter a unique title"
                     required
                     aria-describedby="title-help"
@@ -637,7 +689,7 @@ export function CustomFieldsApp() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Prompt Text
                     </label>
                     {formData.promptText && (
@@ -652,7 +704,7 @@ export function CustomFieldsApp() {
                   <textarea
                     value={formData.promptText}
                     onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={4}
                     placeholder="Enter your prompt text"
                   />
@@ -663,38 +715,38 @@ export function CustomFieldsApp() {
                       id="include-expected-output"
                       checked={includeExpectedOutput}
                       onChange={(e) => setIncludeExpectedOutput(e.target.checked)}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="include-expected-output" className="text-sm text-gray-600 cursor-pointer">
+                    <label htmlFor="include-expected-output" className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
                       Include Expected Output when copying{' '}
-                      <span className="text-xs text-gray-500">(recommended for better AI results)</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-500">(recommended for better AI results)</span>
                     </label>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Category
                     </label>
                     <input
                       type="text"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Development"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Tags
                     </label>
                     <input
                       type="text"
                       value={formData.tags}
                       onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="comma, separated, tags"
                     />
                   </div>
@@ -702,8 +754,8 @@ export function CustomFieldsApp() {
 
                 {/* Custom Fields */}
                 {customFields.length > 0 && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-sm font-medium text-gray-700">Custom Fields</h3>
+                  <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Fields</h3>
                     {customFields.map((field: any) => (
                       <DynamicField
                         key={field.id}
@@ -716,32 +768,32 @@ export function CustomFieldsApp() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Expected Output
                   </label>
                   <textarea
                     value={formData.expectedOutput}
                     onChange={(e) => setFormData({ ...formData, expectedOutput: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                     placeholder={`Expected Output Format:\n  - Title: [product name]\n  - Description: [2-3 sentences]\n  - Key Features: [bullet list]`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Notes
                   </label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={2}
                     placeholder="Additional notes"
                   />
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex-1 flex items-center gap-2">
                     <button
                       onClick={handleSave}
