@@ -1,10 +1,10 @@
 import { ToastProvider } from './hooks/useToast';
-import { MainApp } from './components/MainApp';
+import { CustomFieldsApp } from './components/CustomFieldsApp';
 
 function App() {
   return (
     <ToastProvider>
-      <MainApp />
+      <CustomFieldsApp />
     </ToastProvider>
   );
 }
