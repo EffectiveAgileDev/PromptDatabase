@@ -6,7 +6,6 @@ import { CopyToClipboard } from './CopyToClipboard';
 import { Welcome } from './Welcome';
 import { CategoryManager } from './CategoryManager';
 import { ImportExport } from './ImportExport';
-import { AutoSaveTest } from './AutoSaveTest';
 import { useToast } from '@/hooks/useToast';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -517,11 +516,6 @@ export function CustomFieldsApp() {
               Found {filteredPrompts.length} result{filteredPrompts.length !== 1 ? 's' : ''} for "{searchQuery}"
             </div>
           )}
-        </div>
-
-        {/* Auto-Save Test (temporary) */}
-        <div className="mb-6">
-          <AutoSaveTest />
         </div>
 
         {/* Main Content */}
