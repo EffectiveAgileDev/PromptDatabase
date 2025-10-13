@@ -59,6 +59,8 @@ This will install all required dependencies including:
 - Zustand (state management)
 - Dexie.js (IndexedDB wrapper)
 
+**Note:** Do not run the suggested line that includes the 'audit fix --force' because all of the vulnerabilities are in the development of the application and will not impact how it runs.
+
 ### 3. Verify Installation
 
 ```bash
