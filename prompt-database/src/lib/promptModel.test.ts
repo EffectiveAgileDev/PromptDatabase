@@ -181,12 +181,12 @@ describe('PromptModel', () => {
       expect(mockStorageService.getPrompt).toHaveBeenCalledWith('test-id');
     });
 
-    it('returns null for non-existent prompt', async () => {
+    it('returns undefined for non-existent prompt', async () => {
       mockStorageService.getPrompt.mockResolvedValue(undefined);
 
       const result = await promptModel.getPrompt('non-existent');
 
-      expect(result).toBeNull();
+      expect(result).toBeUndefined();
     });
   });
 
