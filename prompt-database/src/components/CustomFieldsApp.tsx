@@ -41,6 +41,10 @@ export function CustomFieldsApp() {
   const [showImportExport, setShowImportExport] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showWelcome, setShowWelcome] = useState(prompts.length === 0);
+  const [includeExpectedOutput, setIncludeExpectedOutput] = useState(() => {
+    const saved = localStorage.getItem('includeExpectedOutput');
+    return saved === null ? true : saved === 'true'; // Default to true
+  });
   const itemsPerPage = 10;
 
   const selectedPrompt = getSelectedPrompt();
@@ -51,6 +55,11 @@ export function CustomFieldsApp() {
       setShowWelcome(false);
     }
   }, [prompts.length, showWelcome]);
+
+  // Save includeExpectedOutput preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('includeExpectedOutput', String(includeExpectedOutput));
+  }, [includeExpectedOutput]);
 
   // Form data state
   const [formData, setFormData] = useState(() => {
@@ -273,7 +282,8 @@ export function CustomFieldsApp() {
         ctrlKey: true,
         action: () => {
           if (selectedPrompt && formData.promptText) {
-            navigator.clipboard?.writeText(formData.promptText);
+            const textToCopy = formatCopyText(formData.promptText);
+            navigator.clipboard?.writeText(textToCopy);
             updateLastUsed(selectedPrompt.id);
             showToast('Prompt copied to clipboard', 'success');
           }
@@ -296,6 +306,14 @@ export function CustomFieldsApp() {
       showToast('Prompt deleted successfully', 'success');
     }
   };
+
+  // Formatter function to optionally include expected output
+  const formatCopyText = useCallback((text: string) => {
+    if (includeExpectedOutput && formData.expectedOutput?.trim()) {
+      return `${text}\n\n---\n\n${formData.expectedOutput}`;
+    }
+    return text;
+  }, [includeExpectedOutput, formData.expectedOutput]);
 
   const handleCopySuccess = useCallback((_text: string) => {
     if (selectedPrompt) {
@@ -451,11 +469,11 @@ export function CustomFieldsApp() {
               <h2 className="text-lg font-semibold">Prompts</h2>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600">Sort by:</label>
+                  <label className="text-sm text-gray-600 dark:text-gray-300">Sort by:</label>
                   <select
                     value={sortField}
                     onChange={(e) => _handleSort(e.target.value)}
-                    className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="updatedAt">Last Modified</option>
                     <option value="createdAt">Created Date</option>
@@ -616,6 +634,7 @@ export function CustomFieldsApp() {
                         text={formData.promptText}
                         buttonText="Copy"
                         onCopy={handleCopySuccess}
+                        formatter={formatCopyText}
                       />
                     )}
                   </div>
@@ -626,6 +645,20 @@ export function CustomFieldsApp() {
                     rows={4}
                     placeholder="Enter your prompt text"
                   />
+                  {/* Checkbox to include expected output when copying */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="include-expected-output"
+                      checked={includeExpectedOutput}
+                      onChange={(e) => setIncludeExpectedOutput(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor="include-expected-output" className="text-sm text-gray-600 cursor-pointer">
+                      Include Expected Output when copying{' '}
+                      <span className="text-xs text-gray-500">(recommended for better AI results)</span>
+                    </label>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -680,7 +713,7 @@ export function CustomFieldsApp() {
                     onChange={(e) => setFormData({ ...formData, expectedOutput: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
-                    placeholder="Describe the expected output"
+                    placeholder={`Expected Output Format:\n  - Title: [product name]\n  - Description: [2-3 sentences]\n  - Key Features: [bullet list]`}
                   />
                 </div>
 

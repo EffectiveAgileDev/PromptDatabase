@@ -18,25 +18,25 @@ export function PromptListHeader({ sortField, sortDirection, onSort }: PromptLis
   };
 
   return (
-    <div className="grid grid-cols-4 gap-4 p-2 border-b font-semibold text-sm text-gray-700">
+    <div className="grid grid-cols-4 gap-4 p-2 border-b font-bold text-sm text-gray-900 dark:text-white dark:border-gray-700">
       <button
         data-testid="sort-header-title"
         onClick={() => onSort('title' as SortField)}
-        className="text-left hover:text-blue-600 flex items-center gap-1"
+        className="text-left hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
       >
         Title {getSortIndicator('title')}
       </button>
       <button
         data-testid="sort-header-category"
         onClick={() => onSort('category' as SortField)}
-        className="text-left hover:text-blue-600 flex items-center gap-1"
+        className="text-left hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
       >
         Category {getSortIndicator('category')}
       </button>
       <button
         data-testid="sort-header-updatedAt"
         onClick={() => onSort('updatedAt' as SortField)}
-        className="text-left hover:text-blue-600 flex items-center gap-1"
+        className="text-left hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
       >
         Updated {getSortIndicator('updatedAt')}
       </button>
