@@ -32,7 +32,7 @@ export function CustomFieldsApp() {
 
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchField, setSearchField] = useState<SearchField>('all');
+  const [searchField, setSearchField] = useState<SearchField>('title');
   const [sortField, setSortField] = useState<SortField>('updatedAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -701,6 +701,7 @@ export function CustomFieldsApp() {
                     onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={4}
+                    maxLength={4000}
                     placeholder="Enter your prompt text"
                   />
                   {/* Checkbox to include expected output when copying */}
@@ -747,21 +748,6 @@ export function CustomFieldsApp() {
                   </div>
                 </div>
 
-                {/* Custom Fields */}
-                {customFields.length > 0 && (
-                  <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Fields</h3>
-                    {customFields.map((field: any) => (
-                      <DynamicField
-                        key={field.id}
-                        field={field}
-                        value={formData.customFields[field.id]}
-                        onChange={(value) => handleCustomFieldChange(field.id, value)}
-                      />
-                    ))}
-                  </div>
-                )}
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Expected Output
@@ -787,6 +773,21 @@ export function CustomFieldsApp() {
                     placeholder="Additional notes"
                   />
                 </div>
+
+                {/* Custom Fields */}
+                {customFields.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Fields</h3>
+                    {customFields.map((field: any) => (
+                      <DynamicField
+                        key={field.id}
+                        field={field}
+                        value={formData.customFields[field.id]}
+                        onChange={(value) => handleCustomFieldChange(field.id, value)}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex-1 flex items-center gap-2">
@@ -872,6 +873,11 @@ export function CustomFieldsApp() {
         <CategoryManager
           isOpen={showCategoryManager}
           onClose={() => setShowCategoryManager(false)}
+          onViewCategory={(categoryName) => {
+            setSearchField('category');
+            setSearchQuery(categoryName === 'Uncategorized' ? '' : categoryName);
+            setCurrentPage(1);
+          }}
         />
 
         {/* Import/Export Modal */}

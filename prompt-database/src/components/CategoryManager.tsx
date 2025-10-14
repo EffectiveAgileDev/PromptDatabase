@@ -27,10 +27,11 @@ const PRESET_COLORS = [
 interface CategoryManagerProps {
   isOpen: boolean;
   onClose: () => void;
+  onViewCategory?: (categoryName: string) => void;
 }
 
-export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
-  const { prompts } = usePromptStore();
+export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryManagerProps) {
+  const { prompts, updatePrompt } = usePromptStore();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState(PRESET_COLORS[0]);
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
@@ -79,12 +80,20 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
   };
 
   const handleDeleteCategory = (category: Category) => {
-    if (category.promptCount > 0) {
-      // Would show confirmation dialog for reassigning prompts
-      return;
-    }
+    if (category.name === 'Uncategorized') return;
 
-    // Delete empty category
+    const message = category.promptCount > 0
+      ? `Delete category "${category.name}"?\n\nThis will remove the category from ${category.promptCount} prompt(s). The prompts will be moved to "Uncategorized".`
+      : `Delete empty category "${category.name}"?`;
+
+    if (confirm(message)) {
+      // Remove category from all prompts
+      prompts.forEach((prompt: any) => {
+        if (prompt.category === category.name) {
+          updatePrompt(prompt.id, { category: '' });
+        }
+      });
+    }
   };
 
   const formatLastUsed = (date?: Date) => {
@@ -238,7 +247,10 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
 
                   <div className="flex gap-2 mt-4">
                     <button
-                      onClick={() => {/* Filter prompts by category */}}
+                      onClick={() => {
+                        onViewCategory?.(category.name);
+                        onClose();
+                      }}
                       className="flex-1 px-3 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
                     >
                       View Prompts

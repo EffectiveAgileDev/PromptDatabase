@@ -257,7 +257,12 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
 
       Object.entries(fieldMapping).forEach(([csvColumn, promptField]) => {
         if (promptField && row[csvColumn] !== undefined) {
-          mappedRow[promptField] = row[csvColumn];
+          let value = row[csvColumn];
+          // Limit promptText to 4000 characters
+          if (promptField === 'promptText' && typeof value === 'string' && value.length > 4000) {
+            value = value.substring(0, 4000);
+          }
+          mappedRow[promptField] = value;
         }
       });
 

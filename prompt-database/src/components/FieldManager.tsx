@@ -237,7 +237,7 @@ export const FieldManager: React.FC = () => {
           {customFields.map((field) => (
             <div
               key={field.id}
-              className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50"
+              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md hover:bg-gray-50"
             >
               <div className="flex-1">
                 <div className="font-medium">{field.name}</div>
