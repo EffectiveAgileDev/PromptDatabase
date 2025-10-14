@@ -236,6 +236,11 @@ export function CustomFieldsApp() {
       return;
     }
 
+    if (!formData.category.trim()) {
+      showToast('Category is required', 'error');
+      return;
+    }
+
     if (isCreating) {
       addPrompt(formData);
       showToast('Prompt created successfully', 'success');
@@ -409,6 +414,17 @@ export function CustomFieldsApp() {
       label: `⚙️ ${field.name}`
     }))
   ];
+
+  // Get unique categories from existing prompts
+  const existingCategories = useMemo(() => {
+    const categories = new Set<string>();
+    prompts.forEach((prompt: any) => {
+      if (prompt.category && prompt.category.trim()) {
+        categories.add(prompt.category.trim());
+      }
+    });
+    return Array.from(categories).sort();
+  }, [prompts]);
 
   // Show welcome screen for new users
   if (showWelcome) {
@@ -700,7 +716,7 @@ export function CustomFieldsApp() {
                     value={formData.promptText}
                     onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={4}
+                    rows={8}
                     maxLength={4000}
                     placeholder="Enter your prompt text"
                   />
@@ -722,16 +738,26 @@ export function CustomFieldsApp() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Category
+                    <label htmlFor="category-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Category *
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      id="category-select"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="e.g., Development"
-                    />
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Select a category...</option>
+                      {existingCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Manage categories in the Categories dialog above
+                    </p>
                   </div>
 
                   <div>
@@ -756,7 +782,7 @@ export function CustomFieldsApp() {
                     value={formData.expectedOutput}
                     onChange={(e) => setFormData({ ...formData, expectedOutput: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
+                    rows={6}
                     placeholder={`Expected Output Format:\n  - Title: [product name]\n  - Description: [2-3 sentences]\n  - Key Features: [bullet list]`}
                   />
                 </div>
