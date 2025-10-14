@@ -6,10 +6,12 @@ import type { CustomField } from '@/types/customFields';
 export interface Prompt {
   id: string;
   title: string;
+  type?: 'prompt' | 'project'; // Type of entry: prompt or project
   promptText?: string;
   category?: string;
   tags?: string;
   expectedOutput?: string;
+  instructions?: string; // Project instructions (only for type='project')
   lastUsed?: Date;
   notes?: string;
   customFields?: Record<string, any>;

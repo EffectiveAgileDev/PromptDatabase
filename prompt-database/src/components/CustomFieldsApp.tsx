@@ -105,20 +105,24 @@ export function CustomFieldsApp() {
     if (selectedPrompt) {
       return {
         title: selectedPrompt.title,
+        type: selectedPrompt.type || 'prompt',
         promptText: selectedPrompt.promptText || '',
         category: selectedPrompt.category || '',
         tags: selectedPrompt.tags || '',
         expectedOutput: selectedPrompt.expectedOutput || '',
+        instructions: selectedPrompt.instructions || '',
         notes: selectedPrompt.notes || '',
         customFields: selectedPrompt.customFields || {}
       };
     }
     return {
       title: '',
+      type: 'prompt' as 'prompt' | 'project',
       promptText: '',
       category: '',
       tags: '',
       expectedOutput: '',
+      instructions: '',
       notes: '',
       customFields: {}
     };
@@ -206,10 +210,12 @@ export function CustomFieldsApp() {
     selectPrompt(prompt.id);
     setFormData({
       title: prompt.title,
+      type: prompt.type || 'prompt',
       promptText: prompt.promptText || '',
       category: prompt.category || '',
       tags: prompt.tags || '',
       expectedOutput: prompt.expectedOutput || '',
+      instructions: prompt.instructions || '',
       notes: prompt.notes || '',
       customFields: prompt.customFields || {}
     });
@@ -220,10 +226,12 @@ export function CustomFieldsApp() {
     selectPrompt(null);
     setFormData({
       title: '',
+      type: 'prompt',
       promptText: '',
       category: '',
       tags: '',
       expectedOutput: '',
+      instructions: '',
       notes: '',
       customFields: {}
     });
@@ -240,6 +248,12 @@ export function CustomFieldsApp() {
     // When importing, category may be empty and that's acceptable
     if (!formData.category.trim() && (isCreating || selectedPrompt)) {
       showToast('Category is required', 'error');
+      return;
+    }
+
+    // Require instructions for Projects
+    if (formData.type === 'project' && !formData.instructions.trim()) {
+      showToast('Instructions are required for Projects', 'error');
       return;
     }
 
@@ -264,7 +278,8 @@ export function CustomFieldsApp() {
       }
     }, [selectedPrompt, isCreating, updatePrompt]),
     enabled: !isCreating && selectedPrompt !== null,
-    delay: 1000 // 1 second delay for auto-save
+    delay: 1000, // 1 second delay for auto-save
+    entityId: selectedPromptId // Track which prompt is being edited
   });
 
   // Keyboard shortcuts
@@ -681,6 +696,37 @@ export function CustomFieldsApp() {
                   {lastSaved && !isAutoSaving && "Prompt auto-saved successfully"}
                 </div>
                 
+                {/* Type Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Type
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="prompt-type"
+                        value="prompt"
+                        checked={formData.type === 'prompt'}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value as 'prompt' | 'project' })}
+                        className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">🔤 Prompt</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="prompt-type"
+                        value="project"
+                        checked={formData.type === 'project'}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value as 'prompt' | 'project' })}
+                        className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">📋 Project</span>
+                    </label>
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="prompt-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Title *
@@ -788,6 +834,36 @@ export function CustomFieldsApp() {
                     placeholder={`Expected Output Format:\n  - Title: [product name]\n  - Description: [2-3 sentences]\n  - Key Features: [bullet list]`}
                   />
                 </div>
+
+                {/* Instructions field - only visible for Projects */}
+                {formData.type === 'project' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Instructions {formData.type === 'project' && '*'}
+                      </label>
+                      {formData.instructions && (
+                        <CopyToClipboard
+                          text={formData.instructions}
+                          buttonText="Copy"
+                          onCopy={() => {
+                            if (selectedPrompt) {
+                              updateLastUsed(selectedPrompt.id);
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                    <textarea
+                      value={formData.instructions}
+                      onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={6}
+                      placeholder="Enter project instructions..."
+                      required={formData.type === 'project'}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
