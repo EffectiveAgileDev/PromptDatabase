@@ -1,4 +1,8 @@
-import { onCLS, onFID, onFCP, onLCP, onTTFB } from 'web-vitals';
+import { onCLS, onINP, onFCP, onLCP, onTTFB } from 'web-vitals';
+
+declare global {
+  function gtag(...args: any[]): void;
+}
 
 interface PerformanceMetric {
   name: string;
@@ -27,7 +31,7 @@ class PerformanceMonitor {
   private initializeMetrics() {
     // Core Web Vitals
     onCLS((metric) => this.recordMetric('CLS', metric.value, this.getCLSRating(metric.value)));
-    onFID((metric) => this.recordMetric('FID', metric.value, this.getFIDRating(metric.value)));
+    onINP((metric) => this.recordMetric('INP', metric.value, this.getINPRating(metric.value)));
     onFCP((metric) => this.recordMetric('FCP', metric.value, this.getFCPRating(metric.value)));
     onLCP((metric) => this.recordMetric('LCP', metric.value, this.getLCPRating(metric.value)));
     onTTFB((metric) => this.recordMetric('TTFB', metric.value, this.getTTFBRating(metric.value)));
@@ -60,9 +64,9 @@ class PerformanceMonitor {
     return 'poor';
   }
 
-  private getFIDRating(value: number): 'good' | 'needs-improvement' | 'poor' {
-    if (value <= 100) return 'good';
-    if (value <= 300) return 'needs-improvement';
+  private getINPRating(value: number): 'good' | 'needs-improvement' | 'poor' {
+    if (value <= 200) return 'good';
+    if (value <= 500) return 'needs-improvement';
     return 'poor';
   }
 

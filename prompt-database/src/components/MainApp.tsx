@@ -317,14 +317,14 @@ export function MainApp() {
       if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         const searchInput = document.querySelector('input[type="text"]');
-        searchInput?.focus();
+        (searchInput as HTMLInputElement)?.focus();
       }
 
       // /: Focus search
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
         const searchInput = document.querySelector('input[type="text"]');
-        searchInput?.focus();
+        (searchInput as HTMLInputElement)?.focus();
       }
     };
 

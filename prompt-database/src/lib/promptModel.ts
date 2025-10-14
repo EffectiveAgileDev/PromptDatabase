@@ -104,7 +104,7 @@ export class PromptModel {
   }
 
   async searchPrompts(query: string, field: keyof Prompt = 'title'): Promise<Prompt[]> {
-    return await storageService.searchPrompts(query, field);
+    return await storageService.searchPrompts({ query, field: field as any });
   }
 }
 

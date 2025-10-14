@@ -1,5 +1,5 @@
 import { db } from './database';
-import { Prompt, Category } from '@/types';
+import type { Prompt, Category } from '@/types';
 
 export type SearchField = 'title' | 'promptText' | 'category' | 'tags';
 export type SortField = 'title' | 'createdAt' | 'updatedAt' | 'lastUsed' | 'category';

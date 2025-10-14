@@ -1,4 +1,4 @@
-import { SortField, SortDirection } from '@/lib/storage';
+import type { SortField, SortDirection } from '@/lib/storage';
 
 interface PromptListHeaderProps {
   sortField: SortField;

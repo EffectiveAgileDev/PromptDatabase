@@ -308,7 +308,7 @@ export function CustomFieldsApp() {
         ctrlKey: true,
         action: () => {
           const searchInput = document.querySelector('input[type="text"]');
-          searchInput?.focus();
+          (searchInput as HTMLInputElement)?.focus();
         },
         description: 'Focus search'
       },
@@ -316,7 +316,7 @@ export function CustomFieldsApp() {
         key: '/',
         action: () => {
           const searchInput = document.querySelector('input[type="text"]');
-          searchInput?.focus();
+          (searchInput as HTMLInputElement)?.focus();
         },
         description: 'Focus search'
       },

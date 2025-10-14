@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { usePromptStore } from '@/store/promptStore'; type Prompt = ReturnType<typeof usePromptStore>['prompts']['items'] extends Map<string, infer T> ? T : never;
+import type { Prompt } from '@/store/promptStore';
 
 interface SortConfig {
   field: keyof Prompt;

@@ -75,7 +75,7 @@ export function useFocusManagement() {
   const focusElement = (selector: string) => {
     const element = document.querySelector(selector);
     if (element) {
-      element.focus();
+      (element as HTMLElement).focus();
       return true;
     }
     return false;
@@ -156,7 +156,7 @@ export function FormField({
       )}
       
       <div>
-        {React.cloneElement(children as React.ReactElement, {
+        {React.cloneElement(children as React.ReactElement<any>, {
           id,
           'aria-describedby': ariaDescribedBy || undefined,
           'aria-invalid': error ? 'true' : undefined,
