@@ -135,46 +135,76 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
           setImportStep('preview');
           validateAndPreview(parsedData);
         } else if (file.name.endsWith('.csv')) {
-          // Proper CSV parsing that handles quoted fields with commas
-          const lines = content.split('\n').filter(line => line.trim());
-
-          // Parse CSV line respecting quoted fields
-          const parseCSVLine = (line: string): string[] => {
-            const result: string[] = [];
-            let current = '';
+          // Advanced CSV parsing that handles multiline quoted fields
+          const parseCSV = (csvContent: string): string[][] => {
+            const rows: string[][] = [];
+            let currentRow: string[] = [];
+            let currentField = '';
             let inQuotes = false;
 
-            for (let i = 0; i < line.length; i++) {
-              const char = line[i];
-              const nextChar = line[i + 1];
+            for (let i = 0; i < csvContent.length; i++) {
+              const char = csvContent[i];
+              const nextChar = csvContent[i + 1];
 
               if (char === '"') {
                 if (inQuotes && nextChar === '"') {
-                  // Escaped quote
-                  current += '"';
-                  i++; // Skip next quote
+                  // Escaped quote (doubled quote)
+                  currentField += '"';
+                  i++; // Skip the next quote
                 } else {
                   // Toggle quote state
                   inQuotes = !inQuotes;
                 }
               } else if (char === ',' && !inQuotes) {
-                // Field separator
-                result.push(current.trim());
-                current = '';
+                // Field separator (not inside quotes)
+                currentRow.push(currentField);
+                currentField = '';
+              } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                // Row separator (not inside quotes)
+                // Skip \r in \r\n
+                if (char === '\r' && nextChar === '\n') {
+                  i++;
+                }
+                // Only push if we have content
+                if (currentField || currentRow.length > 0) {
+                  currentRow.push(currentField);
+                  if (currentRow.some(field => field.trim())) {
+                    rows.push(currentRow);
+                  }
+                  currentRow = [];
+                  currentField = '';
+                }
               } else {
-                current += char;
+                // Regular character
+                currentField += char;
               }
             }
-            result.push(current.trim());
-            return result;
+
+            // Don't forget the last field and row
+            if (currentField || currentRow.length > 0) {
+              currentRow.push(currentField);
+              if (currentRow.some(field => field.trim())) {
+                rows.push(currentRow);
+              }
+            }
+
+            return rows;
           };
 
-          headers = parseCSVLine(lines[0]);
-          parsedData = lines.slice(1).map(line => {
-            const values = parseCSVLine(line);
+          const rows = parseCSV(content);
+
+          if (rows.length === 0) {
+            throw new Error('CSV file is empty');
+          }
+
+          // First row is headers
+          headers = rows[0].map(h => h.trim());
+
+          // Remaining rows are data
+          parsedData = rows.slice(1).map(row => {
             const obj: any = {};
             headers.forEach((header, index) => {
-              obj[header] = values[index] || '';
+              obj[header] = (row[index] || '').trim();
             });
             return obj;
           });
