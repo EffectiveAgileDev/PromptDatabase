@@ -236,7 +236,9 @@ export function CustomFieldsApp() {
       return;
     }
 
-    if (!formData.category.trim()) {
+    // Only require category for manual form entry (not for imports via addPrompt)
+    // When importing, category may be empty and that's acceptable
+    if (!formData.category.trim() && (isCreating || selectedPrompt)) {
       showToast('Category is required', 'error');
       return;
     }

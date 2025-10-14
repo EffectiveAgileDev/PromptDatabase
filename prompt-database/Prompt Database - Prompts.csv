@@ -1,0 +1,160 @@
+Title,Prompt Text,General Prompts,Tags,Input Format,Expected Output,Last Used,Notes
+Python Sorting,Write Python a python function that sorts a list of numbers in ascending order. Identify the time complexity of this function. Then optimize this function and explain why it is faster. Don't use Python's in-built sort() method.,Code Generation,Sorting,,,,
+Create a prompt Database,Tell me how to create a prompt database in Google Sheets.,General Prompts,Spreadsheets,,,,Create a Prompt Databse
+Add Unit Tests to Python,Add 10 different unit tests for this snippet with comments. Follow up with a short explanation of what was done.,Code Generation,Unit Tests,,,,
+Blog Post for Ebook,"Generate a simple blog post for the book titled ""Title"" with the range of 600-1200 words, with the tone of voice to be friendly, targeting the United States,  for 6th grade, easy to read, conversational language.  Generate relevant images and place them in the article.",Social Media Generation,Ebook,,,,
+Conversational Prompts,"Conversational Prompt Generation. -  I am going to ask you a series of questions where you will then provide the answers and we will have a back and forth conversation.  Then when I'm done asking,  you will take all of the information you provided me, the key details and information and provide a mega,specialized prompt related th the subect of the questions I ask.  For today's conversation, my subect is regarding [incredibly photorealistic images].Are you ready for my first question?  What adjectives would you use to describe an incredibly reasliztic image?  To obtain incredible realieim for editorital style, professional photoshoots, what specific cameras and lenses would I use?  I want a specifc type of editorial photography [fashion, portrat, luxuary, wedding, small object, car, large object, landscape, dark, moonlit]  If my editorial photo was of a Vogue magazine model for a luxary brand, how would you describe her?  She is 24 years old, with brown hair and blue eyes.  Add clothing, accessories.  End with ""Ok, I'm done.  Keepign all the important details, condense the prompt to make it a little shorter.  After you get what you want, you can change your subject.",Conversational Prompting,,,,,
+Image Generation,"Generate and image for me.  Professional Scrum training classroom scene, modern flat illustration style with vibrant colors and minimalist elements. A past-middle-aged male instructor with a short full beard, graying black hair, and glasses stands confidently in business casual attire (navy blazer, gray slacks). He gestures toward a large whiteboard covered in Scrum-themed diagrams: sprint timelines, colorful sticky notes, and a burndown chart. Around him, a diverse group of professional students (varied ages, ethnicities, genders) in business casual clothing (collared shirts, blouses, chinos) engage actively—some taking notes on laptops, others raising hands or collaborating in pairs over a Kanban board. The room features floor-to-ceiling windows with natural light, potted plants, and a wall banner reading 'Certified Scrum Master Workshop • Portland • March 4-5, 2025.' Subtle tech details: a projector screen showing Jira workflows, tablets on desks. Warm, inviting color palette: soft blues and grays with pops of orange and green.",Image Generation,,,,,
+Image Generation,"Generate and image for me. Professional Scrum training classroom scene, modern flat illustration style with vibrant colors and minimalist elements. A past-middle-aged male instructor with a short full beard, graying black hair, and glasses stands confidently in business casual attire (navy blazer, gray slacks). He gestures toward a large whiteboard covered in Scrum-themed diagrams: sprint timelines, colorful sticky notes, and a burndown chart. Around him, a diverse group of professional students (varied ages, ethnicities, genders) in business casual clothing (collared shirts, blouses, chinos) engage actively—some taking notes on laptops, others raising hands or collaborating in pairs over a Kanban board. The room features floor-to-ceiling windows with natural light, potted plants, and a blue wall banner reading 'Certified Scrum Master Workshop • Portland • March 4-5, 2025.' with a san serif font, very clear and readble. Subtle tech details: a projector screen showing Jira workflows, tablets on desks. Warm, inviting color palette: soft blues and grays with pops of orange and green.  ",Image Generation,,,,,
+Image Generation,"Generate and image for me. Professional Scrum training classroom scene, modern flat illustration style with vibrant colors and minimalist elements. A past-middle-aged male instructor with a short full beard, graying black hair, and glasses stands confidently in business casual attire (navy blazer, gray slacks). He gestures toward a large whiteboard covered in Scrum-themed diagrams: sprint timelines, colorful sticky notes, and a burndown chart. Around him, a diverse group of professional students (varied ages, ethnicities, genders) in business casual clothing (collared shirts, blouses, chinos) engage actively—some taking notes on laptops, others raising hands or collaborating in pairs over a Kanban board. The room features floor-to-ceiling windows with natural light, potted plants, and a blue wall banner reading 'Certified Scrum Master Workshop • Portland • March 4-5, 2025.' with a san serif font, very clear and readable making sure that the words and date are correct .Subtle tech details: a projector screen showing Jira workflows, tablets on desks. Warm, inviting color palette: soft blues and grays with pops of orange and green.",Image Generation,,,,,
+Characteur Generation,"Step 1. Customizable parameters using the image and info below. I want you to fill in the data, I want you to fill in the data wherever it is blank after the colon. Write it in brackets. Character Name: (Yendor) Character Age: (74) Character Gender: (Male) Hairstyle: (Layered Cut) Hair Color: (Black,Gray,Multicolored) Skin Tone: (Fair) Accessories: (Glasses) Outfit Upper Body: (Polo Shirt) Upper Clothing Color: (Blue) Outfit Lower Body: (Pants) Lower Clothing Color: (Light Blue) Facial Expression: (Thoughtful) Action: (Teaching) Step 2: Essential Guidelines Generate a character description using the following structure. Replace all of the placeholders with the chosen values, leaving the rest of the text intact. [Character Name] a [Character Age] playful [Character Gender], with [Hairstyle], [Haircolor], [Facial Experssoion], and a [Skin Tone] complexion, [wearing, Accessories if applicable], Dressed in an Outfit featuring a [Upper Clothing Color] [Outfit Upper Body] and [Lower Clothing Color] [Outfit Lower Body], they [Action] on a whimsical background for [Character Gender] , in 3D Pixar Animation Style. Example Output: Siyana, a 6 year-old female, with long curly hair, styled in a layered cut, golden blond hair, a cheerful expression, and a medium complexion, wearing glasses. Dressed in an outfit featuring a red blouse and black skirt, she dances on a whimsical background suitable for girls in a 3D Pixar Animation Style. After you have filled in the prompt template, you can generate the prompt in ChatGPT.",Character Generation,,,,,
+Image Generation,"A high-resolution digital painting of a modern home office at night. The scene features a sleek, minimalist desk with a softly glowing desk lamp casting warm, inviting light over a clean workspace that includes a computer monitor, keyboard, and a few neatly arranged stationery items. Behind the desk, a large window reveals a serene night sky with a subtle crescent moon, scattered stars, and hints of a distant cityscape or silhouette of trees. The room is bathed in contrasting ambient lighting—a blend of cool, deep blues in the shadows and warm, golden hues from the lamp—creating a calm yet dynamic atmosphere. The perspective is slightly angled to add depth, with enough negative space to accommodate overlaying video content, making the image ideal as a background for video presentations.",Image Generation,,,,,
+Foucs Prompt for Images,"How to Build a Focus Prompt for Image Generation Define the Central Subject or ThemeWhat to include:
+The main object or scene (e.g., futuristic cityscape, serene mountain lake, mystical forest).
+Any specific narrative or atmosphere you want the image to convey.
+
+Specify the Artistic Style and Medium
+
+What to include:
+The art style (e.g., digital painting, watercolor, hyper-realistic, cyberpunk, impressionistic).
+The medium (e.g., digital illustration, hand-drawn sketch, 3D render).
+
+Determine the Color Palette and Lighting
+
+What to include:
+Dominant colors and overall mood (e.g., vibrant neon hues for a cyberpunk scene, soft pastels for a dreamy landscape).
+Lighting details (e.g., dramatic low-light with glowing accents, warm sunlight with soft shadows).
+
+Describe the Composition and Perspective
+
+What to include:
+Camera angle or viewpoint (e.g., wide-angle view, bird’s-eye view, close-up detail).
+Arrangement of elements (e.g., central focus with balanced surroundings, dynamic asymmetry).
+
+Add Specific Details or Unique Elements
+
+What to include:
+Extra details that set your image apart (e.g., futuristic vehicles, holographic billboards, mystical creatures).
+Background and environment specifics (e.g., bustling urban streets, tranquil natural scenery).
+Example Focus Prompt
+",Image Generation,,,,,
+Foucs Prompt Example,"“Generate a highly detailed digital illustration of a bustling futuristic metropolis at night. The scene should feature towering skyscrapers illuminated by vibrant neon lights in hues of blue, purple, and pink, reflecting off wet, mirror-like streets. Capture a cyberpunk atmosphere with dramatic low-light ambiance and glowing accents. Include futuristic vehicles flying between buildings and holographic billboards displaying dynamic advertisements. Use a wide-angle perspective to emphasize the scale and depth of the urban landscape, ensuring every element contributes to an immersive, high-energy cityscape.”",Image Generation,,,,,
+Prompt for Application = Social Media Generator,Generate a prompt to create an application that 1) lets the user create a schema for entering events for social media posts 2) there can be up to 10 schemas for posts 3) the user can select a social media post schema 4) the user can configure up to 20 social media accounts 5) the user can pick select up to 5 social media accounts 6) the system will manage a folder based RAG system that the user can add up to 50 files 7) the user will add the event details into the system 8) the system will generate the social media posts from the event and the RAG system 9) the system will schedule the social media posts on a schedule set up by the user and track the posts on a calendar interface.,Social Media Generation,,,,,
+Prompt for an AI-Powered Social Media Content Scheduler with RAG Integration,"Create a web-based application that enables users to design, manage, and schedule social media posts based on predefined schemas, utilizing a Retrieval-Augmented Generation (RAG) system for content enrichment. The system should have the following features:1. Schema Creation for Social Media Posts  Users can create up to 10 distinct schemas for social media posts. Each schema defines the structure and format of a post (e.g., event title, description, hashtags, call-to-action).  Users can select an existing schema when creating a new post.  2. Multi-Account Social Media Configuration
+Users can configure up to 20 social media accounts (across platforms like X, LinkedIn, Facebook, Instagram, etc.).
+When scheduling a post, users can select up to 5 social media accounts to publish the content.
+3. Folder-Based RAG System
+The system maintains a folder-based Retrieval-Augmented Generation (RAG) system where users can store up to 50 files (text, PDFs, images, or other relevant documents).
+The system will utilize the stored content to enhance post generation, ensuring relevance and consistency with past events and themes.
+4. Event-Based Post Generation
+Users enter event details into the system, selecting a schema to format the post.
+The system uses AI to generate social media posts by combining event details with relevant content from the RAG system.
+5. Scheduling & Calendar Integration
+Users define a posting schedule for each event.
+The system automatically schedules posts based on the user’s defined timing and social media account selection.
+A calendar interface provides an overview of scheduled posts, tracking their status (scheduled, posted, or pending review).
+Additional Requirements:
+The interface should be intuitive, with drag-and-drop functionality for managing events and files in the RAG system.
+Users should be able to preview generated posts before scheduling.
+The system should support auto-rescheduling if a post fails to publish.
+Generate performance insights on post engagement and interactions over time.  This application should be designed for ease of use, scalability, and automation, ensuring that users can efficiently manage multiple social media accounts and maintain a structured, event-driven posting strategy.",Code Generation,,,,,
+Generate an Image Example,"“Generate a highly detailed digital illustration of a bustling futuristic metropolis at night. The scene should feature towering skyscrapers illuminated by vibrant neon lights in hues of blue, purple, and pink, reflecting off wet, mirror-like streets. Capture a cyberpunk atmosphere with dramatic low-light ambiance and glowing accents. Include futuristic vehicles flying between buildings and holographic billboards displaying dynamic advertisements. Use a wide-angle perspective to emphasize the scale and depth of the urban landscape, ensuring every element contributes to an immersive, high-energy cityscape.”",Image Generation,,,,,
+Image Generation,"Create a simple image promoting a ""Certified Scrum Product Owner"" and the title of ""Rod's Back!"" in a clean, bold font, centered and error-free. Use only the class title and the words in quotes correctly in the image. Do not use any other words, make sure the words are spelled correctly and have no artistic effects. The central image will be a cartoon image of an older scrum trainer man with curly graying hair.",Image Generation,,,,,
+Web Based Chat Bot,"Create me a prompt that would generate the code for a web based chat bot using the OpenAI API in Cursor. The program should enable an optional voice between the bot and the human. The bot should have the option of creating a list of common questions and fixed answers, and then ask the user if that answered their question. The system should have an administrator mode that is password protected. The interface should allow the administrator to add an image for the bot. In administrator mode, the system should enable and set up a local storage system that uses the supabase API.",Code Generation,,,,,
+Implementation Plan and Starter Code,"I need you to generate a detailed implementation plan or starter code for a custom chatbot designed to serve both low-priced and custom-priced (premium) customers, balancing functionality, scalability, and cost-efficiency. The chatbot should be built with a modular architecture to cater to two distinct customer tiers while sharing some core features. Below are the specifications:
+---
+### Specifications
+
+#### For Low-Priced Customers
+- **Target**: Customers seeking simple, affordable solutions with basic functionality.
+- **Features**:
+  1. **Basic Conversational Abilities**: Handle FAQs (e.g., ""What’s your return policy?"" or ""How do I track my order?"") with pre-set responses. Use simple natural language understanding to recognize common phrases or keywords.
+  2. **Multi-Channel Support**: Integrate with WhatsApp, Facebook Messenger, and a website widget.
+  3. **Templated Responses**: Provide a library of customizable templates for quick setup without advanced coding or AI training.
+  4. **Self-Service Options**: Enable customers to check order status or reset passwords independently.
+  5. **Analytics Dashboard**: Offer basic metrics (e.g., chat count, common questions, peak usage times).
+  6. **Low-Cost Hosting**: Use cloud-based, serverless architecture to minimize costs.
+  7. **Plug-and-Play Integration**: Support easy setup with Shopify, WordPress, or basic CRMs.
+
+#### For Custom-Priced (Premium) Customers
+- **Target**: Customers expecting tailored, high-value solutions with advanced features.
+- **Features**:
+  1. **Advanced AI Capabilities**: Implement sophisticated NLP for nuanced conversations, sentiment analysis, and context retention. Enable learning from interactions over time.
+  2. **Personalization**: Support custom workflows (e.g., guiding VIPs through purchases) and CRM-based responses (e.g., ""Hi John, your last order shipped on Feb 15—need help?"").
+  3. **Omnichannel Experience**: Integrate with email, SMS, voice assistants, and custom apps, maintaining consistent context across channels.
+  4. **Automation and Workflow Integration**: Connect with enterprise tools (e.g., Salesforce, HubSpot, custom APIs) for tasks like lead qualification or appointment booking.
+  5. **Human Handoff**: Enable smooth escalation to human agents with full chat history and context.
+  6. **Custom Branding**: Allow white-labeling with logos, colors, and tone of voice.
+  7. **Robust Security**: Include end-to-end encryption, GDPR/CCPA compliance, and role-based access controls.
+  8. **Detailed Analytics**: Provide insights like customer journey mapping, conversion rates, and predictive trends.
+  9. **Dedicated Support**: Offer priority support with a dedicated account manager or 24/7 assistance.
+
+#### Shared Features (For Both Tiers)
+- **Mobile-Friendly Interface**: Ensure compatibility with mobile devices.
+- **Multilingual Support**: Basic (2-3 languages) for low-priced; expandable (10+ languages or real-time translation) for premium.
+- **Scalability**: Allow low-priced users to upgrade to premium features seamlessly.
+
+#### Pricing Strategy Tie-In
+- **Low-Priced**: Subscription model ($10-50/month) with limited chats or features.
+- **Custom-Priced**: Custom quotes ($500+/month) based on complexity, integrations, or usage tiers.
+
+---
+
+### Task
+Using the above specifications, create a detailed implementation plan or starter code for a chatbot with a modular architecture. The output should:
+1. Define the core system (shared features) and modular add-ons (tier-specific features).
+2. Suggest technologies (e.g., NLP libraries, cloud platforms, APIs) for each component.
+3. Provide a high-level structure (e.g., pseudocode, architecture diagram, or basic Python/Node.js code) to kickstart development.
+4. Ensure the design supports scalability and cost-efficiency.
+
+If generating code, focus on a simple prototype (e.g., a Python script using Flask or FastAPI) that demonstrates:
+- Handling a basic FAQ for low-priced users.
+- A personalized response for premium users.
+- A modular way to toggle features based on customer tier.
+
+Please avoid overwhelming complexity—keep it practical and developer-friendly. If you need a specific use case to refine the output, assume the chatbot is for an e-commerce business selling clothing.
+
+
+",Code Generation,,,,,
+Instructions to fix bugs in ChatBot,"I want you to take a look at each of these testing and known issues and thouoghly analize them.  However, I want you to fix each one and allow the developer to test each one before moving on to the next one.  Here are the isssues. 1. Change the the way that the application runs using the existing DB namd of MongoDB. 2. After using the icon for the user in the top right corner, the box is offered to let the user to choose, Profile or Logout, when Profile is selected an edit screen is offered but when the user tries to change and save, it responds with  Failed to update profile. Please try again. 3. When hitting the Settings page from Document Managment Page Not Found 4.From the Dashboard page, the New Conversation pops up a new conversation page, but does not create the conversation and leaves the old conversation title in the box.5.From the Dashboard page, the New Conversation pops up a new conversation page, but does not create the conversation and leaves the old conversation title in the box.6.From the Dashboard page, the New Conversation pops up a new conversation page, but does not create the conversation and leaves the old conversation title in the box.7.From the Dashboard page, the New Conversation pops up a new conversation page, but does not create the conversation and leaves the old conversation title in the box.Fix Chat API: The logs show that the chat API endpoints are still returning 404 errors. This is because the frontend is trying to access /api/chat/conversations instead of /api/v1/chat/conversations. We've fixed this in the API service, but you may need to restart the application or clear browser cache.
+Update Other Components: If you encounter any other issues with API calls, make sure all components are using the correct API paths with the /v1/ prefix.
+Consider Simplifying API Structure: To avoid future issues, you might want to standardize your API structure to either always include or always exclude the version prefix.",Code Review,,,,,
+Article Generation,"You are an AI assistant tasked with writing an informative article about how non-technical business people can use AI to benefit their businesses. Your goal is to create a practical, easy-to-understand guide that provides actionable advice for business owners who may not have a technical background.",Writing,,,,,
+Securing Pacific Northwest SMBs with TwinGate: Zero Trust Network Access Made Simple,"Write a compelling article explaining why small and medium-sized businesses in the Pacific Northwest should implement TwinGate's Zero Trust Network Access solution. Focus on how TwinGate addresses modern security challenges while eliminating VPN frustrations.
+Include:
+The security vulnerabilities Pacific Northwest SMBs face with traditional VPNs and perimeter-based security
+How TwinGate deploys in just 15 minutes with no hardware changes or network reconfiguration
+The specific benefits of TwinGate's ""deploy and forget"" architecture for busy PNW business owners
+How TwinGate's solution works seamlessly across multi-cloud environments (AWS, GCP, Azure) common among regional tech businesses
+The split tunneling capability that enhances performance for remote workers across Washington, Oregon, and Idaho
+Device-level security enforcement that protects against increasingly sophisticated threats
+How TwinGate's granular access controls provide ""least privilege"" protection for sensitive business resources
+The cost advantages compared to traditional security solutions (reduced attack surface, no hardware costs, minimal IT overhead)
+Implementation examples showing integration with identity providers (Okta, Google, Microsoft) popular in the region
+Frame this as practical advice from someone who understands both the unique business environment of the Pacific Northwest and the transformative benefits of moving beyond VPNs to a modern Zero Trust security model.",Writing,,,,,
+Non AI Generated Looking UI,"Hey Claude, this is a good start — but it looks just like every other AI-generated app out there. Let’s be real: this tool is not like the rest, and I need the design to reflect that. AISO Instructions: Look at the majority target users and focus on promoting the value that’s most relevant to them. Provide the best possible UI/UX specifically for those users — the ones who will get the most value out of the brand/app. You can do anything across all realms: use animations, libraries, or even generate SVG prompts that you think best suit this section. Go wild. Everyone is using the same style, feel, color, animations, etc. — don’t follow that path. Avoid anything that makes this look like a generic AI-made app. Create a unique UX that still delivers the same core value but in a way that stands out and adds more perceived value because of its originality. Let’s make this pop. Think beyond your usual limits. Are you pumped up for this?",UI Generation,,,,,
+AI Image for Visual Learning Books,"Generate a full-page, professional-quality comic-style illustration for a visual learning guide printed on 8.5 x 11 inch paper (portrait orientation).
+
+Style: Clean, professional cartoon style (like modern educational comics or explainer strips).
+
+Color: Use a bold and consistent solid-color border (about ½ inch wide) around the edge of the page — suitable for full-color print.
+
+Layout: Comic-book panel layout (3 to 6 panels per page) that flows top to bottom, left to right. Vary panel sizes for visual interest.
+
+Characters: Include a cartoon instructor (bearded male with glasses, age ~70s, friendly demeanor) and optionally students or scenes depending on the script.
+
+Text Areas: Leave speech bubbles, thought bubbles, and caption boxes blank for user-supplied script. Ensure text areas are well-balanced in the design.
+
+Scene: Varies depending on script input (see below).
+
+Use Case: This page is part of a Visual Learning Guide titled ""AI-Enhanced Scrum Fundamentals"". It is educational and slightly playful, intended to make learning engaging and fun.",Image Generation,,"Title: [Title of the Page]
+Panel 1: [Description + Speech or caption text]
+Panel 2: [Description + Speech or caption text]
+Panel 3: [Description + Speech or caption text]
+...
+Notes: [Optional notes for mood, key visual details, expressions, or motion]
+",,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,...,,,
