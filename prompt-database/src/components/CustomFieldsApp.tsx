@@ -65,12 +65,14 @@ export function CustomFieldsApp() {
 
   const selectedPrompt = getSelectedPrompt();
 
-  // Hide welcome screen when prompts are added
+  // Hide welcome screen only when first prompt is added (not when manually shown)
+  const [manuallyShowingWelcome, setManuallyShowingWelcome] = useState(false);
+
   useEffect(() => {
-    if (prompts.length > 0 && showWelcome) {
+    if (prompts.length > 0 && showWelcome && !manuallyShowingWelcome) {
       setShowWelcome(false);
     }
-  }, [prompts.length, showWelcome]);
+  }, [prompts.length, showWelcome, manuallyShowingWelcome]);
 
   // Save includeExpectedOutput preference to localStorage
   useEffect(() => {
@@ -449,10 +451,12 @@ export function CustomFieldsApp() {
       <Welcome
         onCreateFirst={() => {
           setShowWelcome(false);
+          setManuallyShowingWelcome(false);
           setIsCreating(true);
         }}
         onSkipTour={() => {
           setShowWelcome(false);
+          setManuallyShowingWelcome(false);
         }}
       />
     );
@@ -467,7 +471,10 @@ export function CustomFieldsApp() {
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Prompt Database</h1>
             <div className="flex gap-2">
               <button
-                onClick={() => setShowWelcome(true)}
+                onClick={() => {
+                  setManuallyShowingWelcome(true);
+                  setShowWelcome(true);
+                }}
                 className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 title="Back to Front Page"
               >
