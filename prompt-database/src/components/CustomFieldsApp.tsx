@@ -26,7 +26,8 @@ export function CustomFieldsApp() {
     deletePrompt,
     selectPrompt,
     getSelectedPrompt,
-    updateLastUsed
+    updateLastUsed,
+    clearDatabase
   } = usePromptStore();
 
   const [isCreating, setIsCreating] = useState(false);
@@ -886,22 +887,22 @@ export function CustomFieldsApp() {
           className="relative z-50"
         >
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          
+
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-md w-full rounded-lg bg-white shadow-xl">
+            <Dialog.Panel className="mx-auto max-w-md w-full rounded-lg bg-white dark:bg-gray-800 shadow-xl">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <Dialog.Title className="text-xl font-semibold flex items-center gap-2">
+                  <Dialog.Title className="text-xl font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                     ⌨️ Keyboard Shortcuts
                   </Dialog.Title>
                   <button
                     onClick={() => setShowKeyboardHelp(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     ✕
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {[
                     { key: 'Ctrl + N', description: 'Create new prompt' },
@@ -913,16 +914,38 @@ export function CustomFieldsApp() {
                     { key: 'Delete', description: 'Delete selected prompt' },
                     { key: '?', description: 'Show this help' }
                   ].map(({ key, description }) => (
-                    <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                      <span className="text-sm text-gray-600">{description}</span>
-                      <kbd className="px-2 py-1 text-xs font-mono bg-gray-100 rounded border">
+                    <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">{description}</span>
+                      <kbd className="px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600">
                         {key}
                       </kbd>
                     </div>
                   ))}
                 </div>
-                
-                <div className="mt-6 text-center">
+
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                    <h4 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ Danger Zone</h4>
+                    <p className="text-xs text-red-700 dark:text-red-400 mb-3">
+                      This will permanently delete all prompts and custom fields. This action cannot be undone!
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (confirm('Are you sure you want to clear the entire database?\n\nThis will delete ALL prompts and custom fields permanently.\n\nThis action CANNOT be undone!')) {
+                          clearDatabase();
+                          setShowKeyboardHelp(false);
+                          showToast('Database cleared successfully', 'success');
+                          setShowWelcome(true);
+                        }
+                      }}
+                      className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                    >
+                      🗑️ Clear All Data
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-center">
                   <button
                     onClick={() => setShowKeyboardHelp(false)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"

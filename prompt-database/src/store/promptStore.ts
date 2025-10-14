@@ -21,24 +21,27 @@ interface PromptStore {
   // Prompts
   prompts: Prompt[];
   selectedPromptId: string | null;
-  
+
   // Custom Fields
   customFields: CustomField[];
-  
+
   // Actions for prompts
   addPrompt: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updatePrompt: (id: string, updates: Partial<Prompt>) => void;
   deletePrompt: (id: string) => void;
   selectPrompt: (id: string | null) => void;
   getSelectedPrompt: () => Prompt | undefined;
-  
+
   // Actions for custom fields
   addCustomField: (field: Omit<CustomField, 'id'>) => void;
   removeCustomField: (fieldId: string) => void;
   updateCustomField: (fieldId: string, updates: Partial<CustomField>) => void;
-  
+
   // Update lastUsed timestamp
   updateLastUsed: (id: string) => void;
+
+  // Clear all data
+  clearDatabase: () => void;
 }
 
 export const usePromptStore = create<PromptStore>()(
@@ -124,6 +127,14 @@ export const usePromptStore = create<PromptStore>()(
               : prompt
           ),
         }));
+      },
+
+      clearDatabase: () => {
+        set({
+          prompts: [],
+          selectedPromptId: null,
+          customFields: [],
+        });
       },
     }),
     {

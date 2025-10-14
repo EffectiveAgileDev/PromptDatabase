@@ -15,6 +15,12 @@ interface ImportPreview {
   valid: any[];
   invalid: Array<{ data: any; errors: string[] }>;
   duplicates: any[];
+  headers?: string[];
+  rawData?: any[];
+}
+
+interface FieldMapping {
+  [csvColumn: string]: string; // Maps CSV column to Prompt field
 }
 
 export function ImportExport({ isOpen, onClose }: ImportExportProps) {
@@ -28,6 +34,8 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
   // Import state
   const [importStep, setImportStep] = useState<ImportStep>('upload');
   const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
+  const [fieldMapping, setFieldMapping] = useState<FieldMapping>({});
+  const [parsedHeaders, setParsedHeaders] = useState<string[]>([]);
 
   const handleExport = useCallback(() => {
     try {
@@ -112,93 +120,193 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setImportStep('preview');
-    
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
         let parsedData: any[];
-        
+        let headers: string[] = [];
+
         if (file.name.endsWith('.json')) {
           const jsonData = JSON.parse(content);
           parsedData = Array.isArray(jsonData) ? jsonData : jsonData.prompts || [];
+
+          // For JSON, skip directly to preview since fields should match
+          setImportStep('preview');
+          validateAndPreview(parsedData);
         } else if (file.name.endsWith('.csv')) {
-          // Simple CSV parsing (would use a proper CSV parser in production)
+          // Proper CSV parsing that handles quoted fields with commas
           const lines = content.split('\n').filter(line => line.trim());
-          const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+          // Parse CSV line respecting quoted fields
+          const parseCSVLine = (line: string): string[] => {
+            const result: string[] = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              const nextChar = line[i + 1];
+
+              if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                  // Escaped quote
+                  current += '"';
+                  i++; // Skip next quote
+                } else {
+                  // Toggle quote state
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                // Field separator
+                result.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            result.push(current.trim());
+            return result;
+          };
+
+          headers = parseCSVLine(lines[0]);
           parsedData = lines.slice(1).map(line => {
-            const values = line.split(',');
+            const values = parseCSVLine(line);
             const obj: any = {};
             headers.forEach((header, index) => {
-              // Normalize header to lowercase for consistent access
-              const normalizedHeader = header.toLowerCase();
-              obj[normalizedHeader] = values[index]?.trim().replace(/^"|"$/g, '') || '';
+              obj[header] = values[index] || '';
             });
             return obj;
           });
+
+          // Store headers and raw data for mapping step
+          setParsedHeaders(headers);
+          setImportPreview({
+            valid: [],
+            invalid: [],
+            duplicates: [],
+            headers,
+            rawData: parsedData
+          });
+
+          // Initialize smart field mapping
+          const autoMapping: FieldMapping = {};
+          headers.forEach(header => {
+            const lowerHeader = header.toLowerCase().trim();
+            // Smart auto-mapping based on common patterns
+            if (lowerHeader === 'title' || lowerHeader === 'name') {
+              autoMapping[header] = 'title';
+            } else if (lowerHeader.includes('prompt') && lowerHeader.includes('text')) {
+              autoMapping[header] = 'promptText';
+            } else if (lowerHeader === 'category') {
+              autoMapping[header] = 'category';
+            } else if (lowerHeader === 'tags') {
+              autoMapping[header] = 'tags';
+            } else if (lowerHeader.includes('expected') && lowerHeader.includes('output')) {
+              autoMapping[header] = 'expectedOutput';
+            } else if (lowerHeader === 'notes') {
+              autoMapping[header] = 'notes';
+            } else {
+              autoMapping[header] = ''; // Unmapped
+            }
+          });
+
+          setFieldMapping(autoMapping);
+          setImportStep('mapping');
         } else {
           throw new Error('Unsupported file format');
         }
-        
-        // Validate and categorize data
-        const valid: any[] = [];
-        const invalid: Array<{ data: any; errors: string[] }> = [];
-        const duplicates: any[] = [];
-        
-        parsedData.forEach(item => {
-          const errors: string[] = [];
-          
-          if (!item.title) errors.push('Missing title');
-          if (prompts.some((p: any) => p.title === item.title)) {
-            duplicates.push(item);
-          }
-          
-          if (errors.length > 0) {
-            invalid.push({ data: item, errors });
-          } else {
-            valid.push(item);
-          }
-        });
-        
-        setImportPreview({ valid, invalid, duplicates });
       } catch (error) {
         showToast('Failed to parse file: ' + String(error), 'error');
         setImportStep('upload');
       }
     };
-    
+
     reader.readAsText(file);
+
+    function validateAndPreview(data: any[]) {
+      const valid: any[] = [];
+      const invalid: Array<{ data: any; errors: string[] }> = [];
+      const duplicates: any[] = [];
+
+      data.forEach(item => {
+        const errors: string[] = [];
+
+        if (!item.title) errors.push('Missing title');
+        if (prompts.some((p: any) => p.title === item.title)) {
+          duplicates.push(item);
+        }
+
+        if (errors.length > 0) {
+          invalid.push({ data: item, errors });
+        } else {
+          valid.push(item);
+        }
+      });
+
+      setImportPreview({ valid, invalid, duplicates });
+    }
   }, [prompts, showToast]);
+
+  const handleMappingComplete = useCallback(() => {
+    if (!importPreview?.rawData) return;
+
+    // Apply field mappings to raw data
+    const mappedData = importPreview.rawData.map(row => {
+      const mappedRow: any = {};
+
+      Object.entries(fieldMapping).forEach(([csvColumn, promptField]) => {
+        if (promptField && row[csvColumn] !== undefined) {
+          mappedRow[promptField] = row[csvColumn];
+        }
+      });
+
+      return mappedRow;
+    });
+
+    // Validate mapped data
+    const valid: any[] = [];
+    const invalid: Array<{ data: any; errors: string[] }> = [];
+    const duplicates: any[] = [];
+
+    mappedData.forEach(item => {
+      const errors: string[] = [];
+
+      if (!item.title) errors.push('Missing title (required field not mapped)');
+      if (item.title && prompts.some((p: any) => p.title === item.title)) {
+        duplicates.push(item);
+      }
+
+      if (errors.length > 0) {
+        invalid.push({ data: item, errors });
+      } else {
+        valid.push(item);
+      }
+    });
+
+    setImportPreview({ valid, invalid, duplicates });
+    setImportStep('preview');
+  }, [importPreview, fieldMapping, prompts]);
 
   const handleImport = useCallback(() => {
     if (!importPreview) return;
 
     setImportStep('processing');
-    
+
     try {
       let importCount = 0;
-      
-      for (const prompt of importPreview.valid) {
-        // Add basic validation and transformation
-        // Handle various field name variations (case-insensitive)
-        const promptData = {
-          title: prompt.title || prompt.name || prompt.Title || prompt.Name || '',
-          promptText: prompt.promptText || prompt.prompttext || prompt.content || prompt.text || prompt.prompt || '',
-          category: prompt.category || prompt.Category || '',
-          tags: prompt.tags || prompt.Tags || '',
-          expectedOutput: prompt.expectedOutput || prompt.expectedoutput || prompt.expected_output || '',
-          notes: prompt.notes || prompt.Notes || ''
-        };
 
-        addPrompt(promptData);
+      for (const prompt of importPreview.valid) {
+        addPrompt(prompt);
         importCount++;
       }
-      
+
       showToast(`Successfully imported ${importCount} prompts`, 'success');
       onClose();
       setImportStep('upload');
       setImportPreview(null);
+      setFieldMapping({});
+      setParsedHeaders([]);
     } catch (error) {
       showToast('Import failed: ' + String(error), 'error');
     }
@@ -355,6 +463,92 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
                       <p className="text-xs text-gray-500 mt-2">
                         Supported formats: JSON, CSV (max 10MB)
                       </p>
+                    </div>
+                  </div>
+                )}
+
+                {importStep === 'mapping' && importPreview && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Map CSV Columns to Fields</h3>
+                    <p className="text-sm text-gray-600">
+                      Map your CSV columns to prompt fields. Fields marked with * are required.
+                    </p>
+
+                    <div className="border rounded-lg overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-3 border-b">
+                        <div className="grid grid-cols-2 gap-4 text-sm font-medium text-gray-700">
+                          <div>CSV Column</div>
+                          <div>Maps to Prompt Field</div>
+                        </div>
+                      </div>
+
+                      <div className="divide-y max-h-64 overflow-y-auto">
+                        {parsedHeaders.map((header, index) => (
+                          <div key={index} className="px-4 py-3 hover:bg-gray-50">
+                            <div className="grid grid-cols-2 gap-4 items-center">
+                              <div className="text-sm font-medium text-gray-900">
+                                {header}
+                                {importPreview.rawData && importPreview.rawData[0] && (
+                                  <div className="text-xs text-gray-500 mt-1 truncate">
+                                    Example: {importPreview.rawData[0][header]?.substring(0, 40)}
+                                    {importPreview.rawData[0][header]?.length > 40 ? '...' : ''}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <select
+                                  value={fieldMapping[header] || ''}
+                                  onChange={(e) => setFieldMapping({
+                                    ...fieldMapping,
+                                    [header]: e.target.value
+                                  })}
+                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Skip this column</option>
+                                  <option value="title">Title *</option>
+                                  <option value="promptText">Prompt Text</option>
+                                  <option value="category">Category</option>
+                                  <option value="tags">Tags</option>
+                                  <option value="expectedOutput">Expected Output</option>
+                                  <option value="notes">Notes</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-yellow-800">Mapping Tips</h4>
+                          <ul className="text-xs text-yellow-700 mt-1 space-y-1">
+                            <li>• Title field is required - at least one column must map to it</li>
+                            <li>• Unmapped columns will be ignored during import</li>
+                            <li>• We've auto-detected some mappings based on column names</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleMappingComplete}
+                        disabled={!Object.values(fieldMapping).includes('title')}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Continue to Preview
+                      </button>
+                      <button
+                        onClick={resetImport}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                      >
+                        Back
+                      </button>
                     </div>
                   </div>
                 )}
