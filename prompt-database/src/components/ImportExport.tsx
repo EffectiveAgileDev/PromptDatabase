@@ -196,16 +196,24 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
             // Smart auto-mapping based on common patterns
             if (lowerHeader === 'title' || lowerHeader === 'name') {
               autoMapping[header] = 'title';
-            } else if (lowerHeader.includes('prompt') && lowerHeader.includes('text')) {
+            } else if (lowerHeader === 'prompt text' || lowerHeader === 'prompttext') {
+              // Exact match for "Prompt Text" to avoid false matches
               autoMapping[header] = 'promptText';
-            } else if (lowerHeader === 'category') {
+            } else if (lowerHeader === 'category' || lowerHeader.endsWith('prompts')) {
+              // Match "category" or columns ending with "prompts" (e.g., "General Prompts")
               autoMapping[header] = 'category';
             } else if (lowerHeader === 'tags') {
               autoMapping[header] = 'tags';
+            } else if (lowerHeader === 'input format') {
+              // Map "Input Format" to Expected Output
+              autoMapping[header] = 'expectedOutput';
             } else if (lowerHeader.includes('expected') && lowerHeader.includes('output')) {
               autoMapping[header] = 'expectedOutput';
             } else if (lowerHeader === 'notes') {
               autoMapping[header] = 'notes';
+            } else if (lowerHeader === 'last used') {
+              // Skip "Last Used" - we'll set this on first use
+              autoMapping[header] = '';
             } else {
               autoMapping[header] = ''; // Unmapped
             }
