@@ -467,6 +467,13 @@ export function CustomFieldsApp() {
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Prompt Database</h1>
             <div className="flex gap-2">
               <button
+                onClick={() => setShowWelcome(true)}
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                title="Back to Front Page"
+              >
+                🏠
+              </button>
+              <button
                 onClick={toggleDarkMode}
                 className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
@@ -616,7 +623,9 @@ export function CustomFieldsApp() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white">{prompt.title}</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        {prompt.type === 'project' ? '📋' : '🔤'} {prompt.title}
+                      </h3>
                       {prompt.category && (
                         <span className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded mt-1">
                           {prompt.category}

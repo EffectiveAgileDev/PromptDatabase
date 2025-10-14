@@ -61,34 +61,36 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
         mimeType = 'application/json';
       } else {
         // CSV export
-        const headers = ['id', 'title', 'promptText', 'category', 'tags', 'expectedOutput', 'notes', 'createdAt', 'updatedAt'];
-        
+        const headers = ['id', 'title', 'type', 'promptText', 'category', 'tags', 'expectedOutput', 'instructions', 'notes', 'createdAt', 'updatedAt'];
+
         // Add custom field headers
         customFields.forEach((field: any) => {
           headers.push(`custom_${field.name}`);
         });
-        
+
         const csvContent = [
           headers.join(','),
           ...dataToExport.map((prompt: any) => {
             const row = [
               `"${prompt.id || ''}"`,
               `"${(prompt.title || '').replace(/"/g, '""')}"`,
+              `"${prompt.type || 'prompt'}"`,
               `"${(prompt.promptText || '').replace(/"/g, '""')}"`,
               `"${prompt.category || ''}"`,
               `"${prompt.tags || ''}"`,
               `"${(prompt.expectedOutput || '').replace(/"/g, '""')}"`,
+              `"${(prompt.instructions || '').replace(/"/g, '""')}"`,
               `"${(prompt.notes || '').replace(/"/g, '""')}"`,
               `"${prompt.createdAt || ''}"`,
               `"${prompt.updatedAt || ''}"`
             ];
-            
+
             // Add custom field values
             customFields.forEach((field: any) => {
               const value = prompt.customFields?.[field.id] || '';
               row.push(`"${String(value).replace(/"/g, '""')}"`);
             });
-            
+
             return row.join(',');
           })
         ].join('\n');
@@ -226,6 +228,8 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
             // Smart auto-mapping based on common patterns
             if (lowerHeader === 'title' || lowerHeader === 'name') {
               autoMapping[header] = 'title';
+            } else if (lowerHeader === 'type') {
+              autoMapping[header] = 'type';
             } else if (lowerHeader === 'prompt text' || lowerHeader === 'prompttext') {
               // Exact match for "Prompt Text" to avoid false matches
               autoMapping[header] = 'promptText';
@@ -239,6 +243,8 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
               autoMapping[header] = 'expectedOutput';
             } else if (lowerHeader.includes('expected') && lowerHeader.includes('output')) {
               autoMapping[header] = 'expectedOutput';
+            } else if (lowerHeader === 'instructions') {
+              autoMapping[header] = 'instructions';
             } else if (lowerHeader === 'notes') {
               autoMapping[header] = 'notes';
             } else if (lowerHeader === 'last used') {
@@ -549,10 +555,12 @@ export function ImportExport({ isOpen, onClose }: ImportExportProps) {
                                 >
                                   <option value="">Skip this column</option>
                                   <option value="title">Title *</option>
+                                  <option value="type">Type (prompt/project)</option>
                                   <option value="promptText">Prompt Text</option>
                                   <option value="category">Category</option>
                                   <option value="tags">Tags</option>
                                   <option value="expectedOutput">Expected Output</option>
+                                  <option value="instructions">Instructions</option>
                                   <option value="notes">Notes</option>
                                 </select>
                               </div>
