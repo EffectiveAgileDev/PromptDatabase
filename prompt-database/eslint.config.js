@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'cypress', 'cypress.config.ts', '*.config.ts', '*.config.js', 'vitest.config.ts', 'src/test', '**/*.test.tsx', '**/*.test.ts', '**/ImportTestApp.tsx', '**/MainAppWithToast.tsx', '**/SimpleApp.tsx', '**/StoreTestApp.tsx', 'src/hooks/usePrompts.ts'] },
+  { ignores: ['dist', 'cypress', 'cypress.config.ts', '*.config.ts', '*.config.js', 'vitest.config.ts', 'src/test', '**/*.test.tsx', '**/*.test.ts', '**/ImportTestApp.tsx', '**/MainAppWithToast.tsx', '**/SimpleApp.tsx', '**/StoreTestApp.tsx', 'src/hooks/usePrompts.ts', '**/AutoSaveTest.tsx', 'src/hooks/useSortedAndFilteredPrompts.ts'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     files: ['src/**/*.{ts,tsx}'],

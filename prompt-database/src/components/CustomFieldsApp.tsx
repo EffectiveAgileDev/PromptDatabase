@@ -68,11 +68,14 @@ export function CustomFieldsApp() {
   // Hide welcome screen only when first prompt is added (not when manually shown)
   const [manuallyShowingWelcome, setManuallyShowingWelcome] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // Hide welcome when first prompt is added and manually showing is false
+    // showWelcome is intentionally omitted from dependencies to avoid circular updates
     if (prompts.length > 0 && showWelcome && !manuallyShowingWelcome) {
       setShowWelcome(false);
     }
-  }, [prompts.length, showWelcome, manuallyShowingWelcome]);
+  }, [prompts.length, manuallyShowingWelcome]);
 
   // Save includeExpectedOutput preference to localStorage
   useEffect(() => {

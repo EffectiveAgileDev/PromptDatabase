@@ -175,12 +175,10 @@ export function FormField({
 
 // High contrast mode detection and toggle
 export function useHighContrast() {
-  const [highContrast, setHighContrast] = useState(false);
+  const mediaQuery = window.matchMedia('(prefers-contrast: high)');
+  const [highContrast, setHighContrast] = useState(mediaQuery.matches);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-contrast: high)');
-    setHighContrast(mediaQuery.matches);
-
     const handleChange = (e: MediaQueryListEvent) => {
       setHighContrast(e.matches);
     };
