@@ -20,9 +20,9 @@ describe('SeedPackSelector Component', () => {
         />
       );
 
-      expect(screen.getByLabelText(/Development/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Writing/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Analysis/i)).toBeInTheDocument();
+      expect(screen.getByText('Development')).toBeInTheDocument();
+      expect(screen.getByText('Writing')).toBeInTheDocument();
+      expect(screen.getByText('Analysis')).toBeInTheDocument();
     });
 
     it('should display pack descriptions', () => {

@@ -92,7 +92,6 @@ export function SeedPackSelector({
               checked={selectedPacks.includes(pack.id)}
               onChange={() => handlePackToggle(pack.id)}
               className="w-5 h-5 text-blue-600 mt-1 cursor-pointer"
-              aria-label={pack.name}
             />
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900">{pack.name}</div>
