@@ -581,8 +581,8 @@ export function CustomFieldsApp() {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Prompt List */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          {/* Prompt List - Independent Scrolling */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[calc(100vh-200px)]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Prompts</h2>
               <div className="flex items-center gap-3">
@@ -712,7 +712,7 @@ export function CustomFieldsApp() {
           </div>
 
           {/* Prompt Details */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[calc(100vh-200px)]">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white" id="prompt-form-heading">
               {isCreating ? 'Create New Prompt' : selectedPrompt ? 'Edit Prompt' : 'Select a Prompt'}
             </h2>
