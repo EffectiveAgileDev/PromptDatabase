@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { usePromptStore } from '@/store/promptStore';
+import { SeedPackSelector } from './SeedPackSelector';
+import { loadSeedCategories, loadSeedPrompts } from '@/lib/seedLoader';
 
 interface SamplePrompt {
   title: string;
@@ -39,10 +42,13 @@ const samplePrompts: SamplePrompt[] = [
 interface WelcomeProps {
   onCreateFirst: () => void;
   onSkipTour: () => void;
+  onSeedDataLoaded?: (count: number) => void;
 }
 
-export function Welcome({ onCreateFirst, onSkipTour }: WelcomeProps) {
-  const { addPrompt } = usePromptStore();
+export function Welcome({ onCreateFirst, onSkipTour, onSeedDataLoaded }: WelcomeProps) {
+  const { addPrompt, addCategory } = usePromptStore();
+  const [selectedSeedPacks, setSelectedSeedPacks] = useState<string[]>([]);
+  const [seedDataLoading, setSeedDataLoading] = useState(false);
 
   const handleUseTemplate = (template: SamplePrompt) => {
     addPrompt({
@@ -54,6 +60,40 @@ export function Welcome({ onCreateFirst, onSkipTour }: WelcomeProps) {
       notes: template.notes
     });
     onCreateFirst();
+  };
+
+  const handleLoadSeedData = async () => {
+    if (selectedSeedPacks.length === 0) {
+      // User skipped seed data
+      onCreateFirst();
+      return;
+    }
+
+    setSeedDataLoading(true);
+    try {
+      // Load and add seed categories
+      const categories = loadSeedCategories();
+      categories.forEach(category => {
+        addCategory(category);
+      });
+
+      // Load and add seed prompts for selected packs
+      const prompts = loadSeedPrompts(selectedSeedPacks as any);
+      let loadedCount = 0;
+      prompts.forEach(prompt => {
+        addPrompt(prompt);
+        loadedCount++;
+      });
+
+      // Notify parent that seed data was loaded
+      if (onSeedDataLoaded) {
+        onSeedDataLoaded(loadedCount);
+      }
+
+      onCreateFirst();
+    } finally {
+      setSeedDataLoading(false);
+    }
   };
 
   return (
@@ -141,6 +181,40 @@ export function Welcome({ onCreateFirst, onSkipTour }: WelcomeProps) {
             <p className="text-gray-600">
               Copy prompts to your clipboard with one click, complete with usage tracking and formatting options.
             </p>
+          </div>
+        </div>
+
+        {/* Seed Data Loading Section */}
+        <div className="mb-12">
+          <SeedPackSelector 
+            selectedPacks={selectedSeedPacks}
+            onSelectionChange={setSelectedSeedPacks}
+          />
+          <div className="mt-4 flex gap-3 justify-center">
+            <button
+              onClick={handleLoadSeedData}
+              disabled={seedDataLoading}
+              aria-busy={seedDataLoading}
+              aria-label={seedDataLoading ? 'Loading seed data...' : 'Continue with selected seed packs'}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              {seedDataLoading ? (
+                <>
+                  <span className="inline-block mr-2 animate-spin">⏳</span>
+                  Loading...
+                </>
+              ) : (
+                'Continue with Selected Packs'
+              )}
+            </button>
+            <button
+              onClick={onSkipTour}
+              disabled={seedDataLoading}
+              aria-label="Skip seed data setup"
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              Skip Setup
+            </button>
           </div>
         </div>
 
