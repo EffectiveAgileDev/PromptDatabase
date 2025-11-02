@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { Dialog } from '@headlessui/react';
+import { useToast } from '@/hooks/useToast';
 
-interface Category {
+interface CategoryDisplay {
   id: string;
   name: string;
   color: string;
   description?: string;
   promptCount: number;
   lastUsed?: Date;
+  isStored?: boolean; // Whether this category is in the categories store
 }
 
 const PRESET_COLORS = [
@@ -31,16 +33,30 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryManagerProps) {
-  const { prompts, updatePrompt } = usePromptStore();
+  const { prompts, updatePrompt, categories, addCategory, removeCategory } = usePromptStore();
+  const { showToast } = useToast();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState(PRESET_COLORS[0]);
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Calculate categories from existing prompts
-  const categories = useMemo(() => {
-    const categoryMap = new Map<string, Category>();
+  // Calculate categories from existing prompts and merge with stored categories
+  const displayCategories = useMemo(() => {
+    const categoryMap = new Map<string, CategoryDisplay>();
     
+    // First, add stored categories
+    categories.forEach((stored) => {
+      categoryMap.set(stored.name, {
+        id: stored.id,
+        name: stored.name,
+        color: stored.color || PRESET_COLORS[categoryMap.size % PRESET_COLORS.length],
+        description: stored.description,
+        promptCount: 0,
+        isStored: true
+      });
+    });
+    
+    // Then add categories from prompts (updates promptCount for existing ones)
     prompts.forEach((prompt: any) => {
       const categoryName = prompt.category || 'Uncategorized';
       
@@ -49,37 +65,53 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
           id: categoryName.toLowerCase().replace(/\s+/g, '-'),
           name: categoryName,
           color: PRESET_COLORS[categoryMap.size % PRESET_COLORS.length],
-          promptCount: 0,
-          lastUsed: undefined
+          promptCount: 0
         });
       }
       
       const category = categoryMap.get(categoryName);
-      category.promptCount++;
-      
-      if (prompt.lastUsed) {
-        const lastUsed = new Date(prompt.lastUsed);
-        if (!category.lastUsed || lastUsed > category.lastUsed) {
-          category.lastUsed = lastUsed;
+      if (category) {
+        category.promptCount++;
+        
+        if (prompt.lastUsed) {
+          const lastUsed = new Date(prompt.lastUsed);
+          if (!category.lastUsed || lastUsed > category.lastUsed) {
+            category.lastUsed = lastUsed;
+          }
         }
       }
     });
     
     return Array.from(categoryMap.values()).sort((a, b) => b.promptCount - a.promptCount);
-  }, [prompts]);
+  }, [prompts, categories]);
 
   const handleCreateCategory = () => {
-    if (!newCategoryName.trim()) return;
+    if (!newCategoryName.trim()) {
+      showToast('Category name is required', 'error');
+      return;
+    }
+
+    // Check if category already exists
+    if (displayCategories.some(cat => cat.name.toLowerCase() === newCategoryName.trim().toLowerCase())) {
+      showToast('Category already exists', 'error');
+      return;
+    }
     
-    // This would typically save to a categories store
-    // For now, we'll just show the creation was successful
+    // Add category to store
+    addCategory({
+      name: newCategoryName.trim(),
+      color: newCategoryColor,
+      description: newCategoryDescription.trim() || undefined
+    });
+
+    showToast('Category created successfully', 'success');
     setNewCategoryName('');
     setNewCategoryColor(PRESET_COLORS[0]);
     setNewCategoryDescription('');
     setShowCreateForm(false);
   };
 
-  const handleDeleteCategory = (category: Category) => {
+  const handleDeleteCategory = (category: CategoryDisplay) => {
     if (category.name === 'Uncategorized') return;
 
     const message = category.promptCount > 0
@@ -93,6 +125,13 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
           updatePrompt(prompt.id, { category: '' });
         }
       });
+      
+      // Remove category from store if it's stored
+      if (category.isStored) {
+        removeCategory(category.id);
+      }
+      
+      showToast('Category deleted successfully', 'success');
     }
   };
 
@@ -133,7 +172,7 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
             {/* Header Actions */}
             <div className="flex items-center justify-between mb-6">
               <div className="text-sm text-gray-600">
-                Managing {categories.length} categories across {prompts.length} prompts
+                Managing {displayCategories.length} categories across {prompts.length} prompts
               </div>
               <button
                 onClick={() => setShowCreateForm(true)}
@@ -213,7 +252,7 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
 
             {/* Categories Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => (
+              {displayCategories.map((category) => (
                 <div
                   key={category.id}
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -268,7 +307,7 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
               ))}
             </div>
 
-            {categories.length === 0 && (
+            {displayCategories.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

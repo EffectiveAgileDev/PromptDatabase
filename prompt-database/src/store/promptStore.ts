@@ -19,6 +19,13 @@ export interface Prompt {
   updatedAt: Date;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  color?: string;
+  description?: string;
+}
+
 interface PromptStore {
   // Prompts
   prompts: Prompt[];
@@ -26,6 +33,9 @@ interface PromptStore {
 
   // Custom Fields
   customFields: CustomField[];
+
+  // Categories
+  categories: Category[];
 
   // Actions for prompts
   addPrompt: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -38,6 +48,11 @@ interface PromptStore {
   addCustomField: (field: Omit<CustomField, 'id'>) => void;
   removeCustomField: (fieldId: string) => void;
   updateCustomField: (fieldId: string, updates: Partial<CustomField>) => void;
+
+  // Actions for categories
+  addCategory: (category: Omit<Category, 'id'>) => void;
+  removeCategory: (categoryId: string) => void;
+  updateCategory: (categoryId: string, updates: Partial<Category>) => void;
 
   // Update lastUsed timestamp
   updateLastUsed: (id: string) => void;
@@ -53,6 +68,7 @@ export const usePromptStore = create<PromptStore>()(
       prompts: [],
       selectedPromptId: null,
       customFields: [],
+      categories: [],
       
       // Prompt actions
       addPrompt: (promptData) => {
@@ -120,6 +136,29 @@ export const usePromptStore = create<PromptStore>()(
           ),
         }));
       },
+
+      // Category actions
+      addCategory: (categoryData) => {
+        const newCategory: Category = {
+          ...categoryData,
+          id: uuidv4(),
+        };
+        set((state) => ({
+          categories: [...state.categories, newCategory],
+        }));
+      },
+      removeCategory: (categoryId) => {
+        set((state) => ({
+          categories: state.categories.filter((category) => category.id !== categoryId),
+        }));
+      },
+      updateCategory: (categoryId, updates) => {
+        set((state) => ({
+          categories: state.categories.map((category) =>
+            category.id === categoryId ? { ...category, ...updates } : category
+          ),
+        }));
+      },
       
       updateLastUsed: (id) => {
         set((state) => ({
@@ -136,6 +175,7 @@ export const usePromptStore = create<PromptStore>()(
           prompts: [],
           selectedPromptId: null,
           customFields: [],
+          categories: [],
         });
       },
     }),
@@ -144,6 +184,7 @@ export const usePromptStore = create<PromptStore>()(
       partialize: (state) => ({
         prompts: state.prompts,
         customFields: state.customFields,
+        categories: state.categories,
       }),
     }
   )
