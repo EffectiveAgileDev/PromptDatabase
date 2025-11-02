@@ -21,6 +21,7 @@ export function CustomFieldsApp() {
     prompts,
     selectedPromptId,
     customFields,
+    categories,
     addPrompt,
     updatePrompt,
     deletePrompt,
@@ -439,14 +440,23 @@ export function CustomFieldsApp() {
 
   // Get unique categories from existing prompts
   const existingCategories = useMemo(() => {
-    const categories = new Set<string>();
-    prompts.forEach((prompt: any) => {
-      if (prompt.category && prompt.category.trim()) {
-        categories.add(prompt.category.trim());
+    const categorySet = new Set<string>();
+    
+    // Add categories from the Zustand store
+    categories.forEach((cat: any) => {
+      if (cat.name && cat.name.trim()) {
+        categorySet.add(cat.name.trim());
       }
     });
-    return Array.from(categories).sort();
-  }, [prompts]);
+    
+    // Add categories from existing prompts
+    prompts.forEach((prompt: any) => {
+      if (prompt.category && prompt.category.trim()) {
+        categorySet.add(prompt.category.trim());
+      }
+    });
+    return Array.from(categorySet).sort();
+  }, [prompts, categories]);
 
   // Show welcome screen for new users
   if (showWelcome) {
