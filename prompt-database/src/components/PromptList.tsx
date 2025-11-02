@@ -1,5 +1,4 @@
 import { usePromptStore } from '@/store/promptStore';
-import { useSortedAndFilteredPrompts } from '@/hooks/useSortedAndFilteredPrompts';
 import { PromptListHeader } from './PromptListHeader';
 import { PromptListItem } from './PromptListItem';
 import type { SortField } from '@/lib/storage';
@@ -19,9 +18,9 @@ export function PromptList() {
     selectPrompt(promptId);
   };
 
-  const handleSort = (_field: SortField) => {
-    // Sorting functionality can be implemented when needed
-    // For now, this is a placeholder to prevent errors
+  const handleSort = (field: SortField) => {
+    // TODO: Implement sorting functionality
+    console.debug('Sort by:', field);
   };
 
   if (displayPrompts.length === 0) {
