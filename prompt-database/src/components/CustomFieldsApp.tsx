@@ -7,6 +7,7 @@ import { Welcome } from './Welcome';
 import { CategoryManager } from './CategoryManager';
 import { ImportExport } from './ImportExport';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { Pagination } from './Pagination';
 import { useToast } from '@/hooks/useToast';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -38,6 +39,7 @@ export function CustomFieldsApp() {
   const [sortField, setSortField] = useState<SortField>('updatedAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showFieldManager, setShowFieldManager] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -64,7 +66,6 @@ export function CustomFieldsApp() {
       return false;
     }
   });
-  const itemsPerPage = 10;
 
   const selectedPrompt = getSelectedPrompt();
 
@@ -484,8 +485,8 @@ export function CustomFieldsApp() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <div className="max-w-7xl mx-auto p-4">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 transition-colors overflow-hidden flex flex-col">
+      <div className="max-w-7xl mx-auto p-4 flex-1 flex flex-col min-h-0">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
@@ -588,9 +589,10 @@ export function CustomFieldsApp() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
           {/* Prompt List - Independent Scrolling */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[calc(100vh-200px)]">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+            <div className="p-6 overflow-y-auto flex-1">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Prompts</h2>
               <div className="flex items-center gap-3">
@@ -600,6 +602,7 @@ export function CustomFieldsApp() {
                     value={sortField}
                     onChange={(e) => handleSort(e.target.value as SortField)}
                     className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Sort field selector"
                   >
                     <option value="updatedAt">Last Modified</option>
                     <option value="createdAt">Created Date</option>
@@ -613,16 +616,30 @@ export function CustomFieldsApp() {
                     ))}
                   </select>
                   <button
-                    onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                    className="p-1 text-gray-400 hover:text-gray-600"
+                    onClick={() => {
+                      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+                      setCurrentPage(1);
+                    }}
+                    className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                      sortDirection === 'asc' 
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
                     title={`Sort ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                    aria-label={`Sort ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
                   >
-                    <svg className={`w-4 h-4 transform ${sortDirection === 'desc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg 
+                      className={`w-4 h-4 transform transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     </svg>
                   </button>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   {sortedPrompts.length} total
                 </span>
               </div>
@@ -694,39 +711,32 @@ export function CustomFieldsApp() {
                 </div>
               ))}
             </div>
+            </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
+            {/* Pagination - Always show to allow items-per-page control */}
+            {sortedPrompts.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={sortedPrompts.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(newItemsPerPage) => {
+                  setItemsPerPage(newItemsPerPage);
+                  setCurrentPage(1); // Reset to first page when changing items per page
+                }}
+              />
             )}
           </div>
 
           {/* Prompt Details */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[calc(100vh-200px)]">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white" id="prompt-form-heading">
-              {isCreating ? 'Create New Prompt' : selectedPrompt ? 'Edit Prompt' : 'Select a Prompt'}
-            </h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+            <div className="overflow-y-auto flex-1 p-6 min-h-0">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white" id="prompt-form-heading">
+                {isCreating ? 'Create New Prompt' : selectedPrompt ? 'Edit Prompt' : 'Select a Prompt'}
+              </h2>
 
-            {(selectedPrompt || isCreating) && (
-              <form className="space-y-4" aria-labelledby="prompt-form-heading" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+              {(selectedPrompt || isCreating) && (
+                <form className="space-y-4" aria-labelledby="prompt-form-heading" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                 {/* Status region for screen readers */}
                 <div aria-live="polite" aria-atomic="true" className="sr-only">
                   {isAutoSaving && "Auto-saving prompt..."}
@@ -977,8 +987,9 @@ export function CustomFieldsApp() {
                     </button>
                   )}
                 </div>
-              </form>
-            )}
+                </form>
+              )}
+            </div>
           </div>
         </div>
 

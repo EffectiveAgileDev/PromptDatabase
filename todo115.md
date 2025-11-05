@@ -155,6 +155,13 @@
   - **Impact**: Users cannot track when prompts were last modified
   - **Priority**: High (affects data integrity and sorting functionality)
 
+- [ ] **Scrollbar Goes Past Content - White Screen Issue**
+  - **Issue**: When using the right scroll bar (Edit Prompt panel), scrolling goes past where there is content and shows a white screen
+  - **Expected**: Scrollbar should stop at the end of content
+  - **Actual**: Can scroll beyond content, revealing empty white space
+  - **Impact**: Poor UX, confusing scroll behavior
+  - **Priority**: Medium (affects usability but not functionality)
+
 ---
 
 ## 📊 Summary Statistics
@@ -164,8 +171,8 @@
 | Incomplete Requirements | 14 |
 | Incorrect/Defective | 2 |
 | Missing Requirements | 9 |
-| Found in User Testing | 1 |
-| **Total** | **26** |
+| Found in User Testing | 2 |
+| **Total** | **27** |
 
 ---
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { Dialog } from '@headlessui/react';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import type { CustomField, FieldType } from '@/types/customFields';
 
 interface AddFieldDialogProps {
@@ -143,54 +144,6 @@ const AddFieldDialog: React.FC<AddFieldDialogProps> = ({
   );
 };
 
-interface DeleteConfirmDialogProps {
-  isOpen: boolean;
-  fieldName: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
-  isOpen,
-  fieldName,
-  onConfirm,
-  onCancel
-}) => {
-  return (
-    <Dialog open={isOpen} onClose={onCancel} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <Dialog.Title className="text-lg font-semibold mb-4">
-            Delete Custom Field
-          </Dialog.Title>
-          
-          <p className="text-gray-600 mb-6">
-            Are you sure you want to delete the field "{fieldName}"? 
-            Existing data in this field will be preserved but the field 
-            will no longer appear in forms.
-          </p>
-          
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              Confirm
-            </button>
-          </div>
-        </Dialog.Panel>
-      </div>
-    </Dialog>
-  );
-};
 
 export const FieldManager: React.FC = () => {
   const { customFields, addCustomField, removeCustomField } = usePromptStore();
@@ -271,14 +224,17 @@ export const FieldManager: React.FC = () => {
         existingFieldNames={customFields.map(f => f.name)}
       />
 
-      {deleteField && (
-        <DeleteConfirmDialog
-          isOpen={true}
-          fieldName={deleteField.name}
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
-      )}
+      <DeleteConfirmationDialog
+        isOpen={deleteField !== null}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Custom Field"
+        message={`Are you sure you want to delete the field "${deleteField?.name}"? Existing data in this field will be preserved but the field will no longer appear in forms.`}
+        itemName={deleteField?.name}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 };
