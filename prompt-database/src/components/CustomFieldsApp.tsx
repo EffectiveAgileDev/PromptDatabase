@@ -6,6 +6,7 @@ import { CopyToClipboard } from './CopyToClipboard';
 import { Welcome } from './Welcome';
 import { CategoryManager } from './CategoryManager';
 import { ImportExport } from './ImportExport';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import { useToast } from '@/hooks/useToast';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -38,6 +39,7 @@ export function CustomFieldsApp() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFieldManager, setShowFieldManager] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [showImportExport, setShowImportExport] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -284,7 +286,7 @@ export function CustomFieldsApp() {
       }
     }, [selectedPrompt, isCreating, updatePrompt]),
     enabled: !isCreating && selectedPrompt !== null,
-    delay: 1000, // 1 second delay for auto-save
+    delay: 500, // 500ms delay for auto-save per PRD
     entityId: selectedPromptId // Track which prompt is being edited
   });
 
@@ -379,7 +381,13 @@ export function CustomFieldsApp() {
   });
 
   const handleDelete = () => {
-    if (selectedPrompt && confirm('Are you sure you want to delete this prompt?')) {
+    if (selectedPrompt) {
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (selectedPrompt) {
       deletePrompt(selectedPrompt.id);
       showToast('Prompt deleted successfully', 'success');
     }
@@ -1097,6 +1105,19 @@ export function CustomFieldsApp() {
           </div>
         </Dialog>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        title="Delete Prompt"
+        message="Are you sure you want to delete this prompt? This action cannot be undone."
+        itemName={selectedPrompt?.title}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

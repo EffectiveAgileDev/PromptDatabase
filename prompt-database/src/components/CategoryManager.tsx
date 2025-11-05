@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { Dialog } from '@headlessui/react';
 import { useToast } from '@/hooks/useToast';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 
 interface CategoryDisplay {
   id: string;
@@ -33,12 +34,15 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryManagerProps) {
-  const { prompts, updatePrompt, categories, addCategory, removeCategory } = usePromptStore();
+  const { prompts, updatePrompt, categories, addCategory, removeCategory, updateCategory } = usePromptStore();
   const { showToast } = useToast();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState(PRESET_COLORS[0]);
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryDisplay | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryDisplay | null>(null);
 
   // Calculate categories from existing prompts and merge with stored categories
   const displayCategories = useMemo(() => {
@@ -111,28 +115,77 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
     setShowCreateForm(false);
   };
 
+  const handleEditCategory = (category: CategoryDisplay) => {
+    if (category.name === 'Uncategorized') return;
+    setEditingCategory(category);
+    setNewCategoryName(category.name);
+    setNewCategoryColor(category.color);
+    setNewCategoryDescription(category.description || '');
+    setShowCreateForm(false);
+  };
+
+  const handleUpdateCategory = () => {
+    if (!editingCategory || !newCategoryName.trim()) return;
+
+    const oldName = editingCategory.name;
+    const newName = newCategoryName.trim();
+
+    // Check if name is already used by another category
+    const nameExists = displayCategories.some(
+      cat => cat.name.toLowerCase() === newName.toLowerCase() && cat.id !== editingCategory.id
+    );
+
+    if (nameExists) {
+      showToast('A category with this name already exists', 'error');
+      return;
+    }
+
+    // Update category in store if it's stored
+    if (editingCategory.isStored) {
+      updateCategory(editingCategory.id, {
+        name: newName,
+        color: newCategoryColor,
+        description: newCategoryDescription.trim() || undefined
+      });
+    }
+
+    // Update all prompts that use this category
+    prompts.forEach((prompt: any) => {
+      if (prompt.category === oldName) {
+        updatePrompt(prompt.id, { category: newName });
+      }
+    });
+
+    showToast('Category updated successfully', 'success');
+    setEditingCategory(null);
+    setNewCategoryName('');
+    setNewCategoryColor(PRESET_COLORS[0]);
+    setNewCategoryDescription('');
+  };
+
   const handleDeleteCategory = (category: CategoryDisplay) => {
     if (category.name === 'Uncategorized') return;
+    setCategoryToDelete(category);
+    setShowDeleteDialog(true);
+  };
 
-    const message = category.promptCount > 0
-      ? `Delete category "${category.name}"?\n\nThis will remove the category from ${category.promptCount} prompt(s). The prompts will be moved to "Uncategorized".`
-      : `Delete empty category "${category.name}"?`;
+  const confirmDeleteCategory = () => {
+    if (!categoryToDelete) return;
 
-    if (confirm(message)) {
-      // Remove category from all prompts
-      prompts.forEach((prompt: any) => {
-        if (prompt.category === category.name) {
-          updatePrompt(prompt.id, { category: '' });
-        }
-      });
-      
-      // Remove category from store if it's stored
-      if (category.isStored) {
-        removeCategory(category.id);
+    // Remove category from all prompts
+    prompts.forEach((prompt: any) => {
+      if (prompt.category === categoryToDelete.name) {
+        updatePrompt(prompt.id, { category: '' });
       }
-      
-      showToast('Category deleted successfully', 'success');
+    });
+    
+    // Remove category from store if it's stored
+    if (categoryToDelete.isStored) {
+      removeCategory(categoryToDelete.id);
     }
+    
+    showToast('Category deleted successfully', 'success');
+    setCategoryToDelete(null);
   };
 
   const formatLastUsed = (date?: Date) => {
@@ -182,10 +235,12 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
               </button>
             </div>
 
-            {/* Create Category Form */}
-            {showCreateForm && (
+            {/* Create/Edit Category Form */}
+            {(showCreateForm || editingCategory) && (
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="text-lg font-medium mb-4">Create New Category</h3>
+                <h3 className="text-lg font-medium mb-4">
+                  {editingCategory ? 'Edit Category' : 'Create New Category'}
+                </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -234,14 +289,20 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
 
                 <div className="flex gap-3 mt-4">
                   <button
-                    onClick={handleCreateCategory}
+                    onClick={editingCategory ? handleUpdateCategory : handleCreateCategory}
                     disabled={!newCategoryName.trim()}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Create Category
+                    {editingCategory ? 'Update Category' : 'Create Category'}
                   </button>
                   <button
-                    onClick={() => setShowCreateForm(false)}
+                    onClick={() => {
+                      setShowCreateForm(false);
+                      setEditingCategory(null);
+                      setNewCategoryName('');
+                      setNewCategoryColor(PRESET_COLORS[0]);
+                      setNewCategoryDescription('');
+                    }}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                   >
                     Cancel
@@ -295,12 +356,20 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
                       View Prompts
                     </button>
                     {category.name !== 'Uncategorized' && (
-                      <button
-                        onClick={() => handleDeleteCategory(category)}
-                        className="px-3 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
-                      >
-                        Delete
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="px-3 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category)}
+                          className="px-3 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -329,6 +398,26 @@ export function CategoryManager({ isOpen, onClose, onViewCategory }: CategoryMan
           </div>
         </Dialog.Panel>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setCategoryToDelete(null);
+        }}
+        onConfirm={confirmDeleteCategory}
+        title="Delete Category"
+        message={
+          categoryToDelete && categoryToDelete.promptCount > 0
+            ? `This will remove the category from ${categoryToDelete.promptCount} prompt(s). The prompts will be moved to "Uncategorized".`
+            : 'Are you sure you want to delete this category? This action cannot be undone.'
+        }
+        itemName={categoryToDelete?.name}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </Dialog>
   );
 }
