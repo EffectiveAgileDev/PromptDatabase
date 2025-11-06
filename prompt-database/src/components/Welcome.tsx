@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { usePromptStore } from '@/store/promptStore';
 import { SeedPackSelector } from './SeedPackSelector';
-import { loadSeedCategories, loadSeedPrompts } from '@/lib/seedLoader';
+import { 
+  loadSeedCategories, 
+  loadSeedPrompts, 
+  filterExistingPrompts,
+  filterExistingCategories 
+} from '@/lib/seedLoader';
 
 interface SamplePrompt {
   title: string;
@@ -46,7 +51,7 @@ interface WelcomeProps {
 }
 
 export function Welcome({ onCreateFirst, onSkipTour, onSeedDataLoaded }: WelcomeProps) {
-  const { addPrompt, addCategory } = usePromptStore();
+  const { addPrompt, addCategory, prompts, categories } = usePromptStore();
   const [selectedSeedPacks, setSelectedSeedPacks] = useState<string[]>([]);
   const [seedDataLoading, setSeedDataLoading] = useState(false);
 
@@ -71,23 +76,23 @@ export function Welcome({ onCreateFirst, onSkipTour, onSeedDataLoaded }: Welcome
 
     setSeedDataLoading(true);
     try {
-      // Load and add seed categories
-      const categories = loadSeedCategories();
-      categories.forEach(category => {
+      // Load seed categories and filter out existing ones
+      const seedCategories = loadSeedCategories();
+      const newCategories = filterExistingCategories(seedCategories, categories);
+      newCategories.forEach(category => {
         addCategory(category);
       });
 
-      // Load and add seed prompts for selected packs
-      const prompts = loadSeedPrompts(selectedSeedPacks as any);
-      let loadedCount = 0;
-      prompts.forEach(prompt => {
+      // Load seed prompts for selected packs and filter out existing ones
+      const seedPrompts = loadSeedPrompts(selectedSeedPacks as any);
+      const newPrompts = filterExistingPrompts(seedPrompts, prompts);
+      newPrompts.forEach(prompt => {
         addPrompt(prompt);
-        loadedCount++;
       });
 
-      // Notify parent that seed data was loaded
+      // Notify parent that seed data was loaded (only new prompts, not duplicates)
       if (onSeedDataLoaded) {
-        onSeedDataLoaded(loadedCount);
+        onSeedDataLoaded(newPrompts.length);
       }
 
       onCreateFirst();
@@ -97,8 +102,8 @@ export function Welcome({ onCreateFirst, onSkipTour, onSeedDataLoaded }: Welcome
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
+    <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 overflow-y-auto">
+      <div className="max-w-4xl w-full mx-auto py-8 px-4">
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="mb-6">
